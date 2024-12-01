@@ -2,12 +2,13 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <nullable>enable</nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Data.fs" />
     <Compile Include="Command.fs" />
     <Content Include="paket.references" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Model\Model.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
