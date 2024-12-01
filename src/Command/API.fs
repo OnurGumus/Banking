@@ -18,14 +18,6 @@ let api (env: _) =
     let config = env :> IConfiguration
     let loggerFactory = env :> ILoggerFactory
     let actorApi = FCQRS.Actor.api config loggerFactory
-    // let domainApi = Command.Domain.API.api env actorApi
-    // let computeMd5Hash = computeMd5Hash secretSalt
-
-    // let userSubs cid =
-    //     createCommandSubscription actorApi domainApi.UserFactory cid
-    
-    // let subSubs cid =
-    //     createCommandSubscription actorApi domainApi.SubscriptionFactory cid
 
 
     { new IAPI with
