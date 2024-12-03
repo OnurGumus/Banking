@@ -49,8 +49,9 @@ module internal Actor =
     type Id = string option
     type CorId = string
     type Version = int64
+    open FCQRS.Model.Data
 
-    type ToEvent<'Event> = Id -> CorId -> Version -> 'Event -> Event<'Event>
+    type ToEvent<'Event> = Id -> CorId -> int64 -> 'Event -> Event<'Event>
 
     let actorProp (env: _) (toEvent: ToEvent<Event>) (mediator: IActorRef<Publish>) (mailbox: Eventsourced<obj>) =
         let config = env :> IConfiguration
@@ -59,13 +60,18 @@ module internal Actor =
 
         let apply (event: Event<_>) (_: State as state) =
             match event.EventDetails, state with
+            | DepositSuccess { Money = Value money }, { Balance = Some (Value balance) } ->
+                let total = balance + money |> ValueLens.Create
+                { state with Balance = Some (total) } 
+            | DepositFailed  _,  _ -> state
+           
             |_ -> state
             |> fun state -> { state with Version = event.Version }
 
         let rec set (state: State) =
             let body (bodyInput: BodyInput<Event>) =
                 let msg = bodyInput.Message
-
+                let version = state.Version
                 actor {
                     match msg, state with
                     | :? Persistence.RecoveryCompleted, _ -> 
@@ -73,7 +79,16 @@ module internal Actor =
                     | :? (Common.Command<Command>) as msg, _ ->
                         let toEvent = toEvent (msg.Id) msg.CorrelationId
 
+
                         match msg.CommandDetails, state with
+                        | Deposit ({ Money = Value  money; UserIdentity = userIdentity  } as details), _ ->
+                            if (state.UserIdentity.IsSome && state.UserIdentity.Value <> userIdentity) ||  money < 0m  then
+                                let event = toEvent (version ) (DepositFailed details)
+                                return! event |> bodyInput.SendToSagaStarter |> Persist
+                            else
+                                let event = toEvent (version ) (DepositSuccess details)
+                                return! event |> bodyInput.SendToSagaStarter |> Persist
+
                         | _ -> return! set state
                     | _ ->
                         bodyInput.Log.LogWarning("Unhandled message: {msg}", msg)
