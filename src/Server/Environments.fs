@@ -1,6 +1,7 @@
 module Banking.Server.Environments
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Configuration
+open Banking.Application.Command.Accounting
 
 
 
@@ -18,6 +19,11 @@ type AppEnv(config: IConfiguration, loggerFactory: ILoggerFactory)  as self=
         member this.Dispose() : unit = loggerFactory.Dispose()
 
     
+    interface IAccounting with
+        member _.Deposit cid = commandApi.Deposit cid
+        member _.Withdraw  cid= commandApi.Withdraw cid
+        member _.Transfer cid = commandApi.Transfer cid
+
 
     interface IConfiguration with
         member _.Item

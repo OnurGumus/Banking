@@ -27,7 +27,7 @@
 #r @"/root/.nuget/packages/dotnetty.handlers/0.7.6/lib/net6.0/DotNetty.Handlers.dll"
 #r @"/root/.nuget/packages/dotnetty.transport/0.7.6/lib/net6.0/DotNetty.Transport.dll"
 #r @"/root/.nuget/packages/dynamitey/3.0.3/lib/netstandard2.0/Dynamitey.dll"
-#r @"/root/.nuget/packages/fcqrs.model/1.1.0/lib/net9.0/FCQRS.Model.dll"
+#r @"/root/.nuget/packages/fcqrs.model/1.1.1/lib/net9.0/FCQRS.Model.dll"
 #r @"/root/.nuget/packages/fcqrs.serialization/1.0.7/lib/net9.0/FCQRS.Serialization.dll"
 #r @"/root/.nuget/packages/fcqrs/1.0.7/lib/net9.0/FCQRS.dll"
 #r @"/root/.nuget/packages/fsharp.interop.dynamic/5.0.1.268/lib/netstandard2.0/FSharp.Interop.Dynamic.dll"
@@ -363,6 +363,10 @@ open FsToolkit.ErrorHandling
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.Logging
 open Hocon.Extensions.Configuration
+open Banking.Application.Command.Accounting
+open FCQRS.Model.Data
+open FCQRS.Model.Aether.Operators
+open FCQRS.Model.Aether
 
 let tempFile = Path.GetTempFileName()
 let connString = $"Data Source={tempFile}"
@@ -388,3 +392,7 @@ let lf = LoggerFactory.Create(fun builder -> builder.AddConsole().AddDebug() |> 
 let env = new Banking.Server.Environments.AppEnv(config,lf)
 
 env.Init()
+
+let acc = env :> IAccounting
+let cid =   Optic.set  (Lens.toValidated CID.Value_ >-> ShortString.Value_ ) "123"  Unchecked.defaultof<_>
+

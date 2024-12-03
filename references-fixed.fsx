@@ -27,7 +27,7 @@
 #r @"/root/.nuget/packages/dotnetty.handlers/0.7.6/lib/net6.0/DotNetty.Handlers.dll"
 #r @"/root/.nuget/packages/dotnetty.transport/0.7.6/lib/net6.0/DotNetty.Transport.dll"
 #r @"/root/.nuget/packages/dynamitey/3.0.3/lib/netstandard2.0/Dynamitey.dll"
-#r @"/root/.nuget/packages/fcqrs.model/1.1.0/lib/net9.0/FCQRS.Model.dll"
+#r @"/root/.nuget/packages/fcqrs.model/1.1.3/lib/net9.0/FCQRS.Model.dll"
 #r @"/root/.nuget/packages/fcqrs.serialization/1.0.7/lib/net9.0/FCQRS.Serialization.dll"
 #r @"/root/.nuget/packages/fcqrs/1.0.7/lib/net9.0/FCQRS.dll"
 #r @"/root/.nuget/packages/fsharp.interop.dynamic/5.0.1.268/lib/netstandard2.0/FSharp.Interop.Dynamic.dll"
@@ -357,10 +357,19 @@
 #r @"/usr/share/dotnet/shared/Microsoft.NETCore.App/9.0.0/netstandard.dll"
 #load @"/workspaces/Banking/src/Server/Environments.fs"
 
+open System
 open System.IO
+open FsToolkit.ErrorHandling
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.Logging
 open Hocon.Extensions.Configuration
+open Banking.Application.Command.Accounting
+open FCQRS.Model.Data
+open FCQRS.Model.Aether.Operators
+open FCQRS.Model.Aether
+open Banking.Model.Data
+open Banking.Model.Command.Accounting
+
 
 let tempFile = Path.GetTempFileName()
 let connString = $"Data Source={tempFile}"
@@ -386,4 +395,21 @@ let lf = LoggerFactory.Create(fun builder -> builder.AddConsole().AddDebug() |> 
 let env = new Banking.Server.Environments.AppEnv(config,lf)
 
 env.Init()
+open FCQRS.Model.Aether.Operators
 
+let acc = env :> IAccounting
+
+let  inline tryCreate v = v |> ValueLens.TryCreate |>  Result.map ValueLens.Create |> Result.value
+
+let cid:CID =
+    "123" |> tryCreate
+
+let money :Money =  ValueLens.Create  10
+let deposit : Deposit = acc.Deposit cid 
+let userIdentity: UserIdentity = ValueLens.Create <| Guid.NewGuid()
+let accountName: AccountName =  "123" |>  tryCreate
+  
+
+let depositResult = deposit  userIdentity accountName money |> Async.RunSynchronously
+
+printfn "%A" depositResult
