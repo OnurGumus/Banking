@@ -4,6 +4,9 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Domain\Account.fs" />
+    <Compile Include="Domain\API.fs" />
+    <Compile Include="AccountingHandler.fs" />
     <Compile Include="API.fs" />
   </ItemGroup>
   <ItemGroup>
