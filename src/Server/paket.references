@@ -1,3 +1,4 @@
 FSharp.Core
 Microsoft.Extensions.Configuration
 Hocon.Extensions.Configuration
+Microsoft.Data.Sqlite

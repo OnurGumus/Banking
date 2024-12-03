@@ -7,3 +7,4 @@ nuget FsToolkit.ErrorHandling
 nuget FCQRS
 nuget Microsoft.Extensions.Configuration
 nuget Hocon.Extensions.Configuration
+nuget Microsoft.Data.Sqlite

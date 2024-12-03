@@ -27,7 +27,7 @@
 #r @"/root/.nuget/packages/dotnetty.handlers/0.7.6/lib/net6.0/DotNetty.Handlers.dll"
 #r @"/root/.nuget/packages/dotnetty.transport/0.7.6/lib/net6.0/DotNetty.Transport.dll"
 #r @"/root/.nuget/packages/dynamitey/3.0.3/lib/netstandard2.0/Dynamitey.dll"
-#r @"/root/.nuget/packages/fcqrs.model/1.1.1/lib/net9.0/FCQRS.Model.dll"
+#r @"/root/.nuget/packages/fcqrs.model/1.1.4/lib/net9.0/FCQRS.Model.dll"
 #r @"/root/.nuget/packages/fcqrs.serialization/1.0.7/lib/net9.0/FCQRS.Serialization.dll"
 #r @"/root/.nuget/packages/fcqrs/1.0.7/lib/net9.0/FCQRS.dll"
 #r @"/root/.nuget/packages/fsharp.interop.dynamic/5.0.1.268/lib/netstandard2.0/FSharp.Interop.Dynamic.dll"
@@ -356,43 +356,4 @@
 #r @"/root/.nuget/packages/linq2db/5.4.1/lib/net6.0/linq2db.dll"
 #r @"/usr/share/dotnet/packs/Microsoft.NETCore.App.Ref/9.0.0/ref/net9.0/netstandard.dll"
 #load @"/workspaces/Banking/src/Server/Environments.fs"
-
-open System
-open System.IO
-open FsToolkit.ErrorHandling
-open Microsoft.Extensions.Configuration
-open Microsoft.Extensions.Logging
-open Hocon.Extensions.Configuration
-open Banking.Application.Command.Accounting
-open FCQRS.Model.Data
-open FCQRS.Model.Aether.Operators
-open FCQRS.Model.Aether
-
-let tempFile = Path.GetTempFileName()
-let connString = $"Data Source={tempFile}"
-
-
-let configBuilder =
-    ConfigurationBuilder()
-        .AddEnvironmentVariables()
-        .AddHoconFile("/workspaces/Alarms.Global/src/Server/config.hocon")
-        .AddInMemoryCollection(
-            dict
-                [| "config:connection-string", connString
-                   "config:akka:persistence:journal:sql:connection-string", connString
-                   "config:akka:persistence:snapshot-store:sql:connection-string", connString
-                   "config:akka:persistence:query:journal:sql:connection-string", connString |]
-        )
-        
-
-let config = configBuilder.Build()
-
-let lf = LoggerFactory.Create(fun builder -> builder.AddConsole().AddDebug() |> ignore)
-
-let env = new Banking.Server.Environments.AppEnv(config,lf)
-
-env.Init()
-
-let acc = env :> IAccounting
-let cid =   Optic.set  (Lens.toValidated CID.Value_ >-> ShortString.Value_ ) "123"  Unchecked.defaultof<_>
-
+#load @"/workspaces/Banking/src/Server/Program.fs"
