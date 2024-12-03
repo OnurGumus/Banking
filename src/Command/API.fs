@@ -29,7 +29,7 @@ let api (env: _) =
             AccountingHandler.deposit (accountSubs  cid)
         member this.Transfer(arg1: CID): Transfer = 
             failwith "Not Implemented"
-        member this.Withdraw(arg1: CID): Withdraw = 
-            failwith "Not Implemented"
+        member this.Withdraw((Value (ResultValue cid))): Withdraw = 
+            AccountingHandler.withdraw (accountSubs  cid)
 
     }

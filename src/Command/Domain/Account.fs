@@ -63,6 +63,10 @@ module internal Actor =
             | DepositSuccess { Money = Value money }, { Balance = Some (Value balance) } ->
                 let total = balance + money |> ValueLens.Create
                 { state with Balance = Some (total) } 
+            | WithdrawSuccess { Money = Value money }, { Balance = Some (Value balance) } ->
+                let total = balance - money |> ValueLens.Create
+                { state with Balance = Some (total) }
+            | WithdrawFailed _, _ 
             | DepositFailed  _,  _ -> state
            
             |_ -> state
@@ -88,8 +92,18 @@ module internal Actor =
                             else
                                 let event = toEvent (version ) (DepositSuccess details)
                                 return! event |> bodyInput.SendToSagaStarter |> Persist
+                        | Withdraw ({ Money = Value  money; UserIdentity = userIdentity  } as details), _ ->
+                            if (state.UserIdentity.IsSome 
+                                    && state.UserIdentity.Value <> userIdentity) ||  money < 0m 
+                                    || state.Balance.IsNone || (state.Balance.Value |> ValueLens.Value) < money then
+                                let event = toEvent (version ) (WithdrawFailed details)
+                                return! event |> bodyInput.SendToSagaStarter |> Persist
+                            else
+                                let event = toEvent (version ) (WithdrawSuccess details)
+                                return! event |> bodyInput.SendToSagaStarter |> Persist
 
                         | _ -> return! set state
+                    
                     | _ ->
                         bodyInput.Log.LogWarning("Unhandled message: {msg}", msg)
                         return Unhandled

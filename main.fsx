@@ -55,3 +55,12 @@ let accountName: AccountName =  "123"  |> ValueLens.CreateAsResult |> Result.val
 let depositResult = deposit  userIdentity accountName money |> Async.RunSynchronously
 
 printfn "%A" depositResult
+
+let money2 :Money =  ValueLens.Create  7
+
+let withdraw : Withdraw = acc.Withdraw cid 
+let withdrawResult = withdraw  userIdentity accountName money |> Async.RunSynchronously
+printfn "%A" withdrawResult
+
+let withdrawResultFailed = withdraw  userIdentity accountName money |> Async.RunSynchronously
+printfn "%A" withdrawResultFailed
