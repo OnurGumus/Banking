@@ -18,8 +18,8 @@ type IDomain =
     abstract AccountFactory: string -> IEntityRef<obj>
 
 let api (env: #_) (actorApi: IActor) =
-        let toEvent ci =
-            Common.toEvent actorApi.System.Scheduler ci
+        let toEvent =
+            Common.toEvent actorApi.System.Scheduler 
         let scr = (sagaCheck env toEvent actorApi)
         
         SagaStarter.init actorApi.System actorApi.Mediator scr

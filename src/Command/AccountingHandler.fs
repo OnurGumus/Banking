@@ -11,7 +11,7 @@ open Domain.Account
 
 
 
-let deposit (createSubs) : Deposit =
+let deposit createSubs : Deposit =
     fun userIdentity  accountName money ->
 
         let operationDetails = { AccountName = accountName; UserIdentity = userIdentity; Money = money }:OperationDetails
@@ -38,7 +38,7 @@ let deposit (createSubs) : Deposit =
 
 
 
-let withdraw (createSubs) : Deposit =
+let withdraw createSubs : Deposit =
     fun userIdentity  accountName money ->
 
         let operationDetails = { AccountName = accountName; UserIdentity = userIdentity; Money = money }:OperationDetails

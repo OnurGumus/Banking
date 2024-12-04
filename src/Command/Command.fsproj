@@ -4,6 +4,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Domain\Actor.fs" />
     <Compile Include="Domain\Account.fs" />
     <Compile Include="Domain\API.fs" />
     <Compile Include="AccountingHandler.fs" />

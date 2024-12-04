@@ -1,0 +1,7 @@
+FSharp.Core
+FluentMigrator.Runner.SQLite
+FCQRS.Serialization
+FCQRS.SQLProvider
+Microsoft.Data.Sqlite
+FCQRS.Model
+FCQRS

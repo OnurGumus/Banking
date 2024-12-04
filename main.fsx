@@ -59,8 +59,8 @@ printfn "%A" depositResult
 let money2 :Money =  ValueLens.Create  7
 
 let withdraw : Withdraw = acc.Withdraw cid 
-let withdrawResult = withdraw  userIdentity accountName money |> Async.RunSynchronously
+let withdrawResult = withdraw  userIdentity accountName money2 |> Async.RunSynchronously
 printfn "%A" withdrawResult
 
-let withdrawResultFailed = withdraw  userIdentity accountName money |> Async.RunSynchronously
+let withdrawResultFailed = withdraw  userIdentity accountName money2 |> Async.RunSynchronously
 printfn "%A" withdrawResultFailed
