@@ -35,9 +35,11 @@ type AppEnv(config: IConfiguration, loggerFactory: ILoggerFactory)  as self=
         member _.GetSection key = config.GetSection(key)
 
     member this.Reset() = 
+                Migrations.reset config
                 this.Init()
         
     member _.Init() = 
+        Migrations.init config
         commandApi <- Banking.Command.API.api self
         
 
