@@ -8,10 +8,10 @@ open FCQRS.Model.Aether
 open FCQRS.Model.Aether.Operators
 
 type UserIdentity = 
-    private  UserIdentity of Guid
-        static member Value_ : Lens<UserIdentity,Guid> = 
+    private  UserIdentity of ShortString
+        static member Value_ : Lens<UserIdentity,ShortString> = 
             (fun (UserIdentity u) -> u), 
-            (fun (g: Guid) _ ->   g |> UserIdentity)
+            (fun (g: ShortString) _ ->   g |> UserIdentity)
 
         override this.ToString() = 
             (ValueLens.Value this).ToString()
@@ -36,3 +36,7 @@ type Money =
         
         override this.ToString() = 
             (ValueLens.Value this).ToString()
+
+    type OperationDetails = { UserIdentity: UserIdentity; AccountName: AccountName; Money: Money }
+    type Account = { AccountName: AccountName; Balance: Money ; Owner: UserIdentity }
+    type TransferDetails = { OperationDetails: OperationDetails; DestinationAccountName: AccountName }

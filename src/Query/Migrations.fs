@@ -49,7 +49,7 @@ type AddOffsetsTable() =
         |> ignore
 
         let dict: IDictionary<string, obj> = Dictionary()
-        dict.Add("OffsetName", "AlarmsGlobal")
+        dict.Add("OffsetName", "Banking")
         dict.Add("OffsetCount", 0L)
 
         this.Insert.IntoTable("Offsets").Row(dict) |> ignore

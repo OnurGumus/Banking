@@ -1,6 +1,6 @@
 
 #load "references-fixed.fsx"  
-#I "/workspaces/Banking/libs"
+#I "/workspaces/Banking/src/Query/libs"
 open System
 open System.IO
 open FsToolkit.ErrorHandling
@@ -15,7 +15,7 @@ open Banking.Model.Data
 open Banking.Model.Command.Accounting
 
 
-let tempFile = Path.GetTempFileName()
+let tempFile = "/workspaces/Banking/src/Server/Database/Banking.db" //Path.GetTempFileName()
 let connString = $"Data Source={tempFile}"
 
 

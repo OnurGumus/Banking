@@ -5,6 +5,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Command.fs" />
+    <Compile Include="Event.fs" />
     <Content Include="paket.references" />
   </ItemGroup>
   <ItemGroup>

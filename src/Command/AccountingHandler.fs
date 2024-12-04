@@ -12,11 +12,10 @@ open Domain.Account
 
 
 let deposit createSubs : Deposit =
-    fun userIdentity  accountName money ->
+    fun  operationDetails ->
 
-        let operationDetails = { AccountName = accountName; UserIdentity = userIdentity; Money = money }:OperationDetails
 
-        let actorId  =  accountName ^. (Lens.toValidated AccountName.Value_ >-> ShortString.Value_  )
+        let actorId  =  operationDetails.AccountName ^. (Lens.toValidated AccountName.Value_ >-> ShortString.Value_  )
         async {
             let! subscribe =
                 createSubs actorId (Deposit(operationDetails)) 
@@ -30,17 +29,16 @@ let deposit createSubs : Deposit =
             | {
                   EventDetails =  DepositFailed _
                   Version = v
-              } -> return   Error [sprintf "Deposit failed for account %s" <| accountName.ToString()]
+              } -> return   Error [sprintf "Deposit failed for account %s" <| actorId.ToString()]
             | e -> return Error [sprintf "Unexpected event %A" e]
         }
 
 
 let withdraw createSubs : Deposit =
-    fun userIdentity  accountName money ->
+    fun operationDetails ->
 
-        let operationDetails = { AccountName = accountName; UserIdentity = userIdentity; Money = money }:OperationDetails
-
-        let actorId  =  accountName ^. (Lens.toValidated AccountName.Value_ >-> ShortString.Value_  )
+        
+        let actorId  =  operationDetails.AccountName ^. (Lens.toValidated AccountName.Value_ >-> ShortString.Value_  )
         async {
             let! subscribe =
                 createSubs actorId (Withdraw(operationDetails)) 
@@ -54,7 +52,7 @@ let withdraw createSubs : Deposit =
             | {
                     EventDetails =  WithdrawFailed _
                     Version = v
-                } -> return   Error [sprintf "Deposit failed for account %s" <| accountName.ToString()]
+                } -> return   Error [sprintf "Deposit failed for account %s" <| actorId.ToString()]
             | e -> return Error [sprintf "Unexpected event %A" e]
         }
 

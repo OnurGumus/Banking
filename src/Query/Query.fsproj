@@ -5,7 +5,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Migrations.fs" />
+    <Compile Include="SqlProvider.fs" />
+    <Compile Include="AccountProjection.fs" />
+    <Compile Include="Projection.fs" />
+    <Compile Include="API.fs" />
     <Content Include="paket.references" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Model\Model.fsproj" />
+    <ProjectReference Include="..\Command\Command.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

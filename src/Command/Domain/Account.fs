@@ -4,8 +4,7 @@ open Banking.Model.Data
 open FCQRS.Common
 open FCQRS
 
-type OperationDetails = { UserIdentity: UserIdentity; AccountName: AccountName; Money: Money }
-type TransferDetails = { OperationDetails: OperationDetails; DestinationAccountName: AccountName }
+
 
 type Event =
     | DepositSuccess of OperationDetails
@@ -73,7 +72,7 @@ module internal Actor =
 
     let init (env: _) toEvent (actorApi: IActor) =
         let initialState = { Version = 0L; UserIdentity = None; AccountName = None; Balance = None }
-        Banking.Actor.init (env: _) initialState "Accounting" toEvent (actorApi: IActor) handleCommand applyEvent
+        Actor.init (env: _) initialState "Accounting" toEvent (actorApi: IActor) handleCommand applyEvent
 
     let factory (env: #_) toEvent actorApi entityId =
         (init env toEvent actorApi).RefFor DEFAULT_SHARD entityId
