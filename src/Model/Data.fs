@@ -6,6 +6,8 @@ open FCQRS.Model.Data
 open System
 open FCQRS.Model.Aether
 open FCQRS.Model.Aether.Operators
+type ModelError = 
+        NegativeMoney of decimal
 
 type UserIdentity = 
     private  UserIdentity of ShortString
@@ -25,18 +27,47 @@ type AccountName =
         override this.ToString() = 
             (ValueLens.Value this).ToString()
 
-
+#nowarn 342
+[<StructuralEquality;CustomComparisonAttribute>]
 type Money = 
     private Money of decimal
-        static let zero =  0.0M |> Money
         static member Value_ : Lens<Money,decimal> = 
             (fun (Money u) -> u), 
             (fun (g: decimal) _ ->   g |> Money)
 
-        
+        static member (-) (Money a, Money b) = Money (a - b)
+        static member (+) (Money a, Money b) = Money (a + b)
+        static member (-) (Money a, b:decimal) = Money (a - b)
+        static member  (+) (Money a, b:decimal) = Money (a + b)
+        static member (*) (Money a, b:decimal) = Money (a * b)
+        static member (/) (Money a, b:decimal) = Money (a / b)
+        interface IComparable with
+            member this.CompareTo (other: obj) = 
+                match other with
+                | :? Money as other -> 
+                    (this:> IComparable<Money>).CompareTo other
+                | _ -> invalidArg "other" "Must be Money"
+                
+        interface IComparable<Money> with
+            member this.CompareTo (NonNullQuick (other: Money) )= 
+                compare (ValueLens.Value this) (ValueLens.Value other)
         override this.ToString() = 
             (ValueLens.Value this).ToString()
 
-    type OperationDetails = { UserIdentity: UserIdentity; AccountName: AccountName; Money: Money }
-    type Account = { AccountName: AccountName; Balance: Money ; Owner: UserIdentity }
-    type TransferDetails = { OperationDetails: OperationDetails; DestinationAccountName: AccountName }
+type PositiveMoney = 
+    private PositiveMoney of Money
+        static member Value_ : ValidatedLens<PositiveMoney,Money, ModelError> = 
+            (fun (PositiveMoney u) -> u), 
+            (fun (g: Money) _ ->   
+                match g with
+                | Money m when m > 0.0M -> Ok(PositiveMoney g)
+                | Money m -> Error (NegativeMoney m)
+            )
+        static member (+) (PositiveMoney a, PositiveMoney b) = PositiveMoney (a + b)
+        static member (-) (PositiveMoney a, PositiveMoney b) = a-b
+        override this.ToString() = 
+            (ValueLens.Value this).ToString()
+
+type OperationDetails = { UserIdentity: UserIdentity; AccountName: AccountName; Money: PositiveMoney }
+type Account = { AccountName: AccountName; Balance: Money ; Owner: UserIdentity }
+type TransferDetails = { OperationDetails: OperationDetails; DestinationAccountName: AccountName }

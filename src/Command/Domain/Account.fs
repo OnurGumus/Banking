@@ -4,23 +4,21 @@ open Banking.Model.Data
 open FCQRS.Common
 open FCQRS
 
-
-
+type BalanceOperation = Deposit | Withdraw
+type BalanceUpdateDetails ={ Account : Account; BalanceOperation : BalanceOperation ; Diff : Money}
+type AccountMismatch = { TargetAccount : Account; TargetUser : UserIdentity }
 type Event =
-    | DepositSuccess of OperationDetails
-    | DepositFailed of OperationDetails
-    | WithdrawSuccess of OperationDetails
-    | WithdrawFailed of OperationDetails
-
+    | BalanceUpdated of BalanceUpdateDetails
+    | OverdraftAttempted of Account * Money
+    | AccountMismatch of  AccountMismatch
+    
 type Command =
     | Deposit of OperationDetails
     | Withdraw of OperationDetails
 
 type State = {
     Version: int64
-    UserIdentity: UserIdentity option
-    AccountName: AccountName option
-    Balance: Money option
+    Account: Account option
 } with
 
     interface ISerializable
@@ -33,45 +31,38 @@ module internal Actor =
 
     let applyEvent (event: Event<_>) (_: State as state) =
         match event.EventDetails, state with
+        | BalanceUpdated ( b:BalanceUpdateDetails), _ ->
+            { state with Account = Some b.Account }
 
-        | DepositSuccess { Money = Value money }, { Balance = Some(Value balance) } ->
-            let total = balance + money |> ValueLens.Create
-            { state with Balance = Some(total) }
-
-        | WithdrawSuccess { Money = Value money }, { Balance = Some(Value balance) } ->
-            let total = balance - money |> ValueLens.Create
-            { state with Balance = Some(total) }
-            
-        | WithdrawFailed _, _
-        | DepositFailed _, _ -> state
-
+        | OverdraftAttempted _, _
         | _ -> state
         |> fun state -> { state with Version = event.Version }
 
-    let handleCommand cmd state  =
+    let handleCommand cmd (state:State)  =
         match cmd, state with
         
-        | Deposit({ Money = Value money; UserIdentity = userIdentity } as details), _ ->
-            if (state.UserIdentity.IsSome && state.UserIdentity.Value <> userIdentity) || money < 0m then
-                Some(Persist(DepositFailed details), state.Version)
+        | Deposit{ Money = (ResultValue money); UserIdentity = userIdentity; AccountName = accountName }, _ ->
+            if (state.Account.IsSome && state.Account.Value.Owner <> userIdentity)  then
+                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} |> Persist, state.Version) |> Some
+            else if state.Account.IsNone then
+                let newAccount = { AccountName = accountName; Balance = money; Owner = userIdentity }
+                (BalanceUpdated { Account = newAccount; BalanceOperation = BalanceOperation.Deposit; Diff = money } |> Persist, state.Version) |> Some
             else
-                Some(Persist(DepositSuccess details), state.Version)
-
-        | Withdraw({ Money = Value money; UserIdentity = userIdentity } as details), _ ->
-            if
-                (state.UserIdentity.IsSome && state.UserIdentity.Value <> userIdentity)
-                || money < 0m
-                || state.Balance.IsNone
-                || (state.Balance.Value |> ValueLens.Value) < money
-            then
-                Some(Persist(WithdrawFailed details), state.Version)
+                let account = { state.Account.Value with Balance = (state.Account.Value.Balance + money) }
+                (BalanceUpdated { Account = account; BalanceOperation = BalanceOperation.Deposit; Diff = money } |> Persist, state.Version) |> Some
+        
+        | Withdraw{ Money = (ResultValue money); UserIdentity = userIdentity }, _ ->
+            if (state.Account.IsSome && state.Account.Value.Owner <> userIdentity) then
+                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} |> Persist, state.Version) |> Some
+            else if state.Account.IsNone || state.Account.Value.Balance < money then
+                (OverdraftAttempted (state.Account.Value, money) |> Persist, state.Version) |> Some
             else
-                Some(Persist(WithdrawSuccess details), state.Version)
-
-
+                let account = { state.Account.Value with Balance = (state.Account.Value.Balance - money) }
+                (BalanceUpdated { Account = account; BalanceOperation = BalanceOperation.Withdraw; Diff = money } |> Persist, state.Version) |> Some
+            
 
     let init (env: _) toEvent (actorApi: IActor) =
-        let initialState = { Version = 0L; UserIdentity = None; AccountName = None; Balance = None }
+        let initialState = { Version = 0L; Account = None}
         Actor.init (env: _) initialState "Accounting" toEvent (actorApi: IActor) handleCommand applyEvent
 
     let factory (env: #_) toEvent actorApi entityId =

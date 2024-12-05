@@ -14,8 +14,8 @@ open FCQRS.Model.Aether
 open Banking.Model.Data
 open Banking.Model.Command.Accounting
 
-
-let tempFile = "/workspaces/Banking/src/Server/Database/Banking.db" //Path.GetTempFileName()
+//let tempFile = "/workspaces/Banking/src/Server/Database/Banking.db"
+let tempFile = Path.GetTempFileName()
 let connString = $"Data Source={tempFile}"
 
 
@@ -40,6 +40,7 @@ let env = new Banking.Server.Environments.AppEnv(config,lf)
 
 env.Init()
 open FCQRS.Model.Aether.Operators
+open FCQRS.Model.Query
 
 let acc = env :> IAccounting
 
@@ -48,19 +49,22 @@ let cid:CID = "123" |> ValueLens.CreateAsResult |> Result.value
 
 let money :Money =  ValueLens.Create  10
 let deposit : Deposit = acc.Deposit cid 
-let userIdentity: UserIdentity = ValueLens.Create <| Guid.NewGuid()
+let userIdentity: UserIdentity = "my user" |> ValueLens.CreateAsResult |> Result.value 
 let accountName: AccountName =  "123"  |> ValueLens.CreateAsResult |> Result.value
-  
+let postiveMoney : PositiveMoney = money |> ValueLens.TryCreate |> Result.value
+let operationDetails = { UserIdentity = userIdentity; AccountName = accountName ; Money = postiveMoney} 
 
-let depositResult = deposit  userIdentity accountName money |> Async.RunSynchronously
+let depositResult = deposit  operationDetails |> Async.RunSynchronously
 
-printfn "%A" depositResult
 
 let money2 :Money =  ValueLens.Create  7
-
 let withdraw : Withdraw = acc.Withdraw cid 
-let withdrawResult = withdraw  userIdentity accountName money2 |> Async.RunSynchronously
-printfn "%A" withdrawResult
+let withdrawResult = withdraw  operationDetails|> Async.RunSynchronously
 
-let withdrawResultFailed = withdraw  userIdentity accountName money2 |> Async.RunSynchronously
-printfn "%A" withdrawResultFailed
+let withdrawResultFailed = withdraw  operationDetails |> Async.RunSynchronously
+let query = env :> IQuery<_>
+System.Threading.Thread.Sleep 1000
+
+let list  = query.Query<Account>() |> Async.RunSynchronously
+
+printf "Accounts: %A" list

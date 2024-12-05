@@ -2,12 +2,15 @@ module Banking.Server.Environments
 open Microsoft.Extensions.Logging
 open Microsoft.Extensions.Configuration
 open Banking.Application.Command.Accounting
+open FCQRS.Model.Query
+open Banking.Application.Event
 
 
 
 type AppEnv(config: IConfiguration, loggerFactory: ILoggerFactory)  as self=
 
     let mutable commandApi = Unchecked.defaultof<_>
+    let mutable queryApi = Unchecked.defaultof<_>
 
 
     interface ILoggerFactory with
@@ -18,6 +21,33 @@ type AppEnv(config: IConfiguration, loggerFactory: ILoggerFactory)  as self=
 
         member this.Dispose() : unit = loggerFactory.Dispose()
 
+    interface IQuery<DataEvent> with
+            member _.Query<'t>(?filter, ?orderby, ?orderbydesc, ?thenby, ?thenbydesc, ?take, ?skip, ?cacheKey) =
+                async {
+                    let! res =
+                        queryApi.Query(
+                            ty = typeof<'t>,
+                            ?filter = filter,
+                            ?orderby = orderby,
+                            ?orderbydesc = orderbydesc,
+                            ?thenby = thenby,
+                            ?thenbydesc = thenbydesc,
+                            ?take = take,
+                            ?skip = skip,
+                            ?cacheKey = cacheKey
+    
+                        )
+                    return res |> Seq.cast<'t> |> List.ofSeq
+                }
+            member _.Subscribe(cb, cancellationToken) = 
+                let ks = queryApi.Subscribe(cb)
+                cancellationToken.Register(fun _ ->ks.Shutdown()) |> ignore
+            member _.Subscribe(filter, take, cb, cancellationToken) = 
+                let ks, res = queryApi.Subscribe(filter, take, cb)
+                cancellationToken.Register(fun _ ->ks.Shutdown()) |> ignore
+                res
+        
+        
     
     interface IAccounting with
         member _.Deposit cid = commandApi.Deposit cid
@@ -41,6 +71,7 @@ type AppEnv(config: IConfiguration, loggerFactory: ILoggerFactory)  as self=
     member _.Init() = 
         Migrations.init config
         commandApi <- Banking.Command.API.api self
+        queryApi <- Banking.Query.API.queryApi config commandApi.ActorApi
         
 
     

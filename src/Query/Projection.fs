@@ -24,7 +24,7 @@ let handleEventWrapper (ctx: Sql.dataContext) (actorApi: IActor) (subQueue: ISou
 
             | _ -> None
 
-        let offset = ctx.Main.Offsets.Individuals.AlarmsGlobal
+        let offset = ctx.Main.Offsets.Individuals.Banking
         offset.OffsetCount <- offsetValue
         ctx.SubmitUpdates()
 
@@ -47,6 +47,6 @@ let init (connectionString: string) (actorApi: IActor) query =
         cmd.CommandText <- "PRAGMA journal_mode=WAL;"
         cmd.ExecuteNonQuery() |> ignore
     
-        let offsetCount = ctx.Main.Offsets.Individuals.AlarmsGlobal.OffsetCount
-    
+        let offsetCount =  ctx.Main.Offsets.Individuals.Banking.OffsetCount
         FCQRS.Query.init actorApi offsetCount (handleEventWrapper ctx) query
+       

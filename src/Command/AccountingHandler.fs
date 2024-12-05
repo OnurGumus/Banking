@@ -10,7 +10,6 @@ open FCQRS.Model.Data
 open Domain.Account
 
 
-
 let deposit createSubs : Deposit =
     fun  operationDetails ->
 
@@ -19,22 +18,21 @@ let deposit createSubs : Deposit =
         async {
             let! subscribe =
                 createSubs actorId (Deposit(operationDetails)) 
-                    (fun (e: Event) ->e.IsDepositSuccess || e.IsDepositFailed)
+                    (fun (e: Event) ->e.IsBalanceUpdated || e.IsAccountMismatch  )
             match subscribe with
             | {
-                  EventDetails = DepositSuccess _
+                  EventDetails = BalanceUpdated _
                   Version = v
               } -> 
                 return  v |> ValueLens.TryCreate |> Result.mapError (fun e -> [e.ToString()])
             | {
-                  EventDetails =  DepositFailed _
+                  EventDetails =   _
                   Version = v
               } -> return   Error [sprintf "Deposit failed for account %s" <| actorId.ToString()]
-            | e -> return Error [sprintf "Unexpected event %A" e]
         }
 
 
-let withdraw createSubs : Deposit =
+let withdraw createSubs : Withdraw =
     fun operationDetails ->
 
         
@@ -42,17 +40,16 @@ let withdraw createSubs : Deposit =
         async {
             let! subscribe =
                 createSubs actorId (Withdraw(operationDetails)) 
-                    (fun (e: Event) ->e.IsDepositSuccess || e.IsDepositFailed)
+                    (fun (e: Event) ->e.IsAccountMismatch || e.IsBalanceUpdated || e.IsOverdraftAttempted)
             match subscribe with
             | {
-                    EventDetails = WithdrawSuccess _
+                    EventDetails = BalanceUpdated _
                     Version = v
                 } -> 
                 return  v |> ValueLens.TryCreate |> Result.mapError (fun e -> [e.ToString()])
             | {
-                    EventDetails =  WithdrawFailed _
+                    EventDetails =   _
                     Version = v
                 } -> return   Error [sprintf "Deposit failed for account %s" <| actorId.ToString()]
-            | e -> return Error [sprintf "Unexpected event %A" e]
         }
 
