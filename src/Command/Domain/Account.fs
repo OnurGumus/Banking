@@ -46,19 +46,19 @@ module internal Actor =
                 (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} |> Persist, state.Version) |> Some
             else if state.Account.IsNone then
                 let newAccount = { AccountName = accountName; Balance = money; Owner = userIdentity }
-                (BalanceUpdated { Account = newAccount; BalanceOperation = BalanceOperation.Deposit; Diff = money } |> Persist, state.Version) |> Some
+                (BalanceUpdated { Account = newAccount; BalanceOperation = BalanceOperation.Deposit; Diff = money } |> Persist, state.Version + 1L) |> Some
             else
                 let account = { state.Account.Value with Balance = (state.Account.Value.Balance + money) }
-                (BalanceUpdated { Account = account; BalanceOperation = BalanceOperation.Deposit; Diff = money } |> Persist, state.Version) |> Some
+                (BalanceUpdated { Account = account; BalanceOperation = BalanceOperation.Deposit; Diff = money } |> Persist, state.Version + 1L) |> Some
         
         | Withdraw{ Money = (ResultValue money); UserIdentity = userIdentity }, _ ->
             if (state.Account.IsSome && state.Account.Value.Owner <> userIdentity) then
-                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} |> Persist, state.Version) |> Some
+                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} |> Persist, state.Version ) |> Some
             else if state.Account.IsNone || state.Account.Value.Balance < money then
                 (OverdraftAttempted (state.Account.Value, money) |> Persist, state.Version) |> Some
             else
                 let account = { state.Account.Value with Balance = (state.Account.Value.Balance - money) }
-                (BalanceUpdated { Account = account; BalanceOperation = BalanceOperation.Withdraw; Diff = money } |> Persist, state.Version) |> Some
+                (BalanceUpdated { Account = account; BalanceOperation = BalanceOperation.Withdraw; Diff = money } |> Persist, state.Version + 1L) |> Some
             
 
     let init (env: _) toEvent (actorApi: IActor) =

@@ -20,6 +20,7 @@ let api (env: _) =
     let actorApi = FCQRS.Actor.api config loggerFactory
     let domainApi = Command.Domain.API.api env actorApi
     let accountSubs cid =  createCommandSubscription actorApi domainApi.AccountFactory cid
+    let transferSubs cid =  createCommandSubscription actorApi domainApi.TransferFactory cid
 
 
     { new IAPI with
@@ -27,8 +28,8 @@ let api (env: _) =
         member _.ActorApi = actorApi        
         member this.Deposit((Value (ResultValue cid)): CID): Deposit = 
             AccountingHandler.deposit (accountSubs  cid)
-        member this.Transfer(arg1: CID): Transfer = 
-            failwith "Not Implemented"
+        member this.Transfer((Value (ResultValue cid)): CID): Transfer = 
+            TransferHandler.transfer (transferSubs  cid)
         member this.Withdraw((Value (ResultValue cid))): Withdraw = 
             AccountingHandler.withdraw (accountSubs  cid)
 
