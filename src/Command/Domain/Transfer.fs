@@ -36,8 +36,8 @@ module internal Actor =
         | _ -> state
         |> fun state -> { state with Version = event.Version }
 
-    let handleCommand cmd (state:State)  =
-        match cmd, state with
+    let handleCommand (cmd:Command<_>) (state:State)  =
+        match cmd.CommandDetails, state with
         | Transfer _, { TransferDetails = Some _ } ->
             (AnotherTransferIsInProgress |> Persist, state.Version) |> Some
 

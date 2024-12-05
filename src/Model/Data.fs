@@ -35,6 +35,8 @@ type Money =
             (fun (Money u) -> u), 
             (fun (g: decimal) _ ->   g |> Money)
 
+        static member Zero = Money 0.0M
+
         static member (-) (Money a, Money b) = Money (a - b)
         static member (+) (Money a, Money b) = Money (a + b)
         static member (-) (Money a, b:decimal) = Money (a - b)

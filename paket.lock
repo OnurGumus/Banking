@@ -1,47 +1,47 @@
 STORAGE: NONE
 NUGET
   remote: https://api.nuget.org/v3/index.json
-    Akka (1.5.31) - restriction: >= net9.0
+    Akka (1.5.32) - restriction: >= net9.0
       Akka.Analyzers (>= 0.2.5) - restriction: >= netstandard2.0
-      Microsoft.Extensions.ObjectPool (>= 6.0.35) - restriction: >= netstandard2.0
+      Microsoft.Extensions.ObjectPool (>= 6.0.36) - restriction: >= netstandard2.0
       Newtonsoft.Json (>= 13.0.1) - restriction: >= netstandard2.0
-      System.Collections.Immutable (>= 6.0) - restriction: >= netstandard2.0
+      System.Collections.Immutable (>= 6.0.1) - restriction: >= netstandard2.0
       System.Configuration.ConfigurationManager (>= 6.0.1) - restriction: >= netstandard2.0
       System.Reflection.Emit (>= 4.7) - restriction: >= netstandard2.0
       System.Threading.Channels (>= 6.0) - restriction: >= netstandard2.0
     Akka.Analyzers (0.2.5) - restriction: >= net9.0
-    Akka.Cluster (1.5.31) - restriction: >= net9.0
-      Akka.Coordination (>= 1.5.31) - restriction: >= netstandard2.0
-      Akka.Remote (>= 1.5.31) - restriction: >= netstandard2.0
-    Akka.Cluster.Sharding (1.5.31) - restriction: >= net9.0
-      Akka.Cluster.Tools (>= 1.5.31) - restriction: >= netstandard2.0
-      Akka.Coordination (>= 1.5.31) - restriction: >= netstandard2.0
-      Akka.DistributedData (>= 1.5.31) - restriction: >= netstandard2.0
-      Akka.DistributedData.LightningDB (>= 1.5.31) - restriction: >= netstandard2.0
-      Akka.Persistence (>= 1.5.31) - restriction: >= netstandard2.0
-    Akka.Cluster.Tools (1.5.31) - restriction: >= net9.0
-      Akka.Cluster (>= 1.5.31) - restriction: >= netstandard2.0
-      Akka.Coordination (>= 1.5.31) - restriction: >= netstandard2.0
-      Akka.Discovery (>= 1.5.31) - restriction: >= netstandard2.0
-    Akka.Coordination (1.5.31) - restriction: >= net9.0
-      Akka (>= 1.5.31) - restriction: >= netstandard2.0
-    Akka.Discovery (1.5.31) - restriction: >= net9.0
-      Akka (>= 1.5.31) - restriction: >= netstandard2.0
-    Akka.DistributedData (1.5.31) - restriction: >= net9.0
-      Akka.Cluster (>= 1.5.31) - restriction: >= netstandard2.0
-    Akka.DistributedData.LightningDB (1.5.31) - restriction: >= net9.0
-      Akka.DistributedData (>= 1.5.31) - restriction: >= netstandard2.0
+    Akka.Cluster (1.5.32) - restriction: >= net9.0
+      Akka.Coordination (>= 1.5.32) - restriction: >= netstandard2.0
+      Akka.Remote (>= 1.5.32) - restriction: >= netstandard2.0
+    Akka.Cluster.Sharding (1.5.32) - restriction: >= net9.0
+      Akka.Cluster.Tools (>= 1.5.32) - restriction: >= netstandard2.0
+      Akka.Coordination (>= 1.5.32) - restriction: >= netstandard2.0
+      Akka.DistributedData (>= 1.5.32) - restriction: >= netstandard2.0
+      Akka.DistributedData.LightningDB (>= 1.5.32) - restriction: >= netstandard2.0
+      Akka.Persistence (>= 1.5.32) - restriction: >= netstandard2.0
+    Akka.Cluster.Tools (1.5.32) - restriction: >= net9.0
+      Akka.Cluster (>= 1.5.32) - restriction: >= netstandard2.0
+      Akka.Coordination (>= 1.5.32) - restriction: >= netstandard2.0
+      Akka.Discovery (>= 1.5.32) - restriction: >= netstandard2.0
+    Akka.Coordination (1.5.32) - restriction: >= net9.0
+      Akka (>= 1.5.32) - restriction: >= netstandard2.0
+    Akka.Discovery (1.5.32) - restriction: >= net9.0
+      Akka (>= 1.5.32) - restriction: >= netstandard2.0
+    Akka.DistributedData (1.5.32) - restriction: >= net9.0
+      Akka.Cluster (>= 1.5.32) - restriction: >= netstandard2.0
+    Akka.DistributedData.LightningDB (1.5.32) - restriction: >= net9.0
+      Akka.DistributedData (>= 1.5.32) - restriction: >= netstandard2.0
       LightningDB (>= 0.16) - restriction: >= netstandard2.0
-    Akka.Persistence (1.5.31) - restriction: >= net9.0
-      Akka (>= 1.5.31) - restriction: >= netstandard2.0
+    Akka.Persistence (1.5.32) - restriction: >= net9.0
+      Akka (>= 1.5.32) - restriction: >= netstandard2.0
       Google.Protobuf (>= 3.26.1) - restriction: >= netstandard2.0
-    Akka.Persistence.Query (1.5.31) - restriction: >= net9.0
-      Akka.Persistence (>= 1.5.31) - restriction: >= netstandard2.0
-      Akka.Streams (>= 1.5.31) - restriction: >= netstandard2.0
-    Akka.Persistence.Query.Sql (1.5.31) - restriction: >= net9.0
-      Akka.Persistence (>= 1.5.31) - restriction: >= netstandard2.0
-      Akka.Persistence.Query (>= 1.5.31) - restriction: >= netstandard2.0
-      Akka.Persistence.Sql.Common (>= 1.5.31) - restriction: >= netstandard2.0
+    Akka.Persistence.Query (1.5.32) - restriction: >= net9.0
+      Akka.Persistence (>= 1.5.32) - restriction: >= netstandard2.0
+      Akka.Streams (>= 1.5.32) - restriction: >= netstandard2.0
+    Akka.Persistence.Query.Sql (1.5.32) - restriction: >= net9.0
+      Akka.Persistence (>= 1.5.32) - restriction: >= netstandard2.0
+      Akka.Persistence.Query (>= 1.5.32) - restriction: >= netstandard2.0
+      Akka.Persistence.Sql.Common (>= 1.5.32) - restriction: >= netstandard2.0
     Akka.Persistence.Sql (1.5.30) - restriction: >= net9.0
       Akka.Persistence.Query (>= 1.5.30) - restriction: >= netstandard2.0
       Akka.Streams (>= 1.5.30) - restriction: >= netstandard2.0
@@ -50,19 +50,19 @@ NUGET
       Microsoft.Bcl.HashCode (>= 1.1.1) - restriction: >= netstandard2.0
       System.Linq.Async (>= 6.0.1) - restriction: >= netstandard2.0
       System.Reactive.Linq (>= 6.0.1) - restriction: >= netstandard2.0
-    Akka.Persistence.Sql.Common (1.5.31) - restriction: >= net9.0
-      Akka.Persistence (>= 1.5.31) - restriction: >= netstandard2.0
+    Akka.Persistence.Sql.Common (1.5.32) - restriction: >= net9.0
+      Akka.Persistence (>= 1.5.32) - restriction: >= netstandard2.0
       System.Data.Common (>= 4.3) - restriction: >= netstandard2.0
       System.Text.RegularExpressions (>= 4.3.1) - restriction: >= netstandard2.0
-    Akka.Remote (1.5.31) - restriction: >= net9.0
-      Akka (>= 1.5.31) - restriction: >= netstandard2.0
+    Akka.Remote (1.5.32) - restriction: >= net9.0
+      Akka (>= 1.5.32) - restriction: >= netstandard2.0
       DotNetty.Handlers (>= 0.7.6) - restriction: >= netstandard2.0
       Google.Protobuf (>= 3.26.1) - restriction: >= netstandard2.0
-    Akka.Serialization.Hyperion (1.5.31) - restriction: >= net9.0
-      Akka (>= 1.5.31) - restriction: >= netstandard2.0
+    Akka.Serialization.Hyperion (1.5.32) - restriction: >= net9.0
+      Akka (>= 1.5.32) - restriction: >= netstandard2.0
       Hyperion (>= 0.12.2) - restriction: >= netstandard2.0
-    Akka.Streams (1.5.31) - restriction: >= net9.0
-      Akka (>= 1.5.31) - restriction: >= netstandard2.0
+    Akka.Streams (1.5.32) - restriction: >= net9.0
+      Akka (>= 1.5.32) - restriction: >= netstandard2.0
       Google.Protobuf (>= 3.26.1) - restriction: >= netstandard2.0
       Reactive.Streams (>= 1.0.4) - restriction: >= netstandard2.0
     Akkling (0.16.2) - restriction: >= net9.0
@@ -111,7 +111,7 @@ NUGET
       Microsoft.CSharp (>= 4.7) - restriction: && (< net40) (>= netstandard2.0)
       System.ComponentModel (>= 4.3) - restriction: && (< net40) (>= netstandard2.0)
     Fable.Package.SDK (1.3) - restriction: >= net9.0
-    FCQRS (1.1.4)
+    FCQRS (1.1.5)
       Akka.Cluster.Sharding (>= 1.5.31) - restriction: >= net9.0
       Akka.Cluster.Tools (>= 1.5.31) - restriction: >= net9.0
       Akka.Persistence.Query.Sql (>= 1.5.31) - restriction: >= net9.0
@@ -131,7 +131,7 @@ NUGET
       FSharp.Core (>= 9.0.100) - restriction: >= net9.0
     FCQRS.Serialization (1.1.4)
       FSharp.SystemTextJson (>= 1.3.13) - restriction: >= net9.0
-    FCQRS.SQLProvider (1.1.4)
+    FCQRS.SqlProvider (1.1.4)
       FCQRS.Model (>= 1.1.4) - restriction: >= net9.0
       SQLProvider (>= 1.4.2) - restriction: >= net9.0
     FluentMigrator (6.2) - restriction: >= netstandard2.0
