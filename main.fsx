@@ -54,17 +54,28 @@ let accountName: AccountName =  "123"  |> ValueLens.CreateAsResult |> Result.val
 let postiveMoney : PositiveMoney = money |> ValueLens.TryCreate |> Result.value
 let operationDetails = { UserIdentity = userIdentity; AccountName = accountName ; Money = postiveMoney} 
 
-let depositResult = deposit  operationDetails |> Async.RunSynchronously
+// let depositResult = deposit  operationDetails |> Async.RunSynchronously
 
 
-let money2 :Money =  ValueLens.Create  7
-let withdraw : Withdraw = acc.Withdraw cid 
-let withdrawResult = withdraw  operationDetails|> Async.RunSynchronously
+// let money2 :Money =  ValueLens.Create  7
+// let withdraw : Withdraw = acc.Withdraw cid 
+// let withdrawResult = withdraw  operationDetails|> Async.RunSynchronously
 
-let withdrawResultFailed = withdraw  operationDetails |> Async.RunSynchronously
-let query = env :> IQuery<_>
-System.Threading.Thread.Sleep 1000
+// let withdrawResultFailed = withdraw  operationDetails |> Async.RunSynchronously
+// let query = env :> IQuery<_>
+// System.Threading.Thread.Sleep 1000
 
-let list  = query.Query<Account>() |> Async.RunSynchronously
+// let list  = query.Query<Account>() |> Async.RunSynchronously
 
-printf "Accounts: %A" list
+// printf "Accounts: %A" list
+
+
+let transfer : Transfer = acc.Transfer cid
+
+let toAccountName: AccountName =  "456"  |> ValueLens.CreateAsResult |> Result.value
+let toUserIdentity: UserIdentity = "my user" |> ValueLens.CreateAsResult |> Result.value
+let toMoney :Money =  ValueLens.Create  5
+let toPostiveMoney : PositiveMoney = toMoney |> ValueLens.TryCreate |> Result.value
+let toOperationDetails = { UserIdentity = toUserIdentity; AccountName = toAccountName ; Money = toPostiveMoney}
+let transferDetails = { OperationDetails = operationDetails; DestinationAccountName= toAccountName}
+let transferResult = transfer  transferDetails  |> Async.RunSynchronously
