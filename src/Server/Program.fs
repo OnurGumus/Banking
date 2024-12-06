@@ -42,7 +42,7 @@ open FCQRS.Model.Query
 let acc = env :> IAccounting
 
 
-let cid:CID = "123" |> ValueLens.CreateAsResult |> Result.value
+let cid:CID = Guid.NewGuid().ToString() |> ValueLens.CreateAsResult |> Result.value
 
 let money :Money =  ValueLens.Create  10
 let deposit : Deposit = acc.Deposit cid 

@@ -11,8 +11,9 @@ type Event =
     | BalanceUpdated of BalanceUpdateDetails
     | OverdraftAttempted of Account * Money
     | AccountMismatch of  AccountMismatch
+    | AccountNotFound
     | MoneyReserved of Money
-    | TransferCompleted
+    // | TransferCompleted
 
     
 type Command =
@@ -20,7 +21,7 @@ type Command =
     | Withdraw of OperationDetails
     | ReserveMoney of Money
     | ConfirmReservation
-    | CompleteTransfer
+
 
 type State = {
     Version: int64
@@ -42,8 +43,8 @@ module internal Actor =
             { state with Account = Some b.Account }
         | MoneyReserved _, _ ->
             { state with Resevations = state.Resevations @ [event] }
-        | TransferCompleted, _ -> 
-            { state with Resevations = state.Resevations |> List.filter (fun x -> x.CorrelationId <> event.CorrelationId) }
+        // | TransferCompleted, _ -> 
+        //     { state with Resevations = state.Resevations |> List.filter (fun x -> x.CorrelationId <> event.CorrelationId) }
         
         | AccountMismatch _, _ 
         | OverdraftAttempted _, _
@@ -53,8 +54,8 @@ module internal Actor =
     let handleCommand (cmd:Command<_>) (state:State)  =
         let corID = cmd.CorrelationId
         match cmd.CommandDetails, state with
-        | CompleteTransfer , _ ->
-            (TransferCompleted |> Persist, state.Version) |> Some
+        // | CompleteTransfer , _ ->
+        //     (TransferCompleted |> Persist, state.Version) |> Some
 
         | ReserveMoney money, _ ->
             let existingEvent =  
@@ -63,7 +64,15 @@ module internal Actor =
 
             match existingEvent with
             | Some x -> x |> Some
-            | None -> (MoneyReserved money |> Persist, state.Version) |> Some
+            | None -> 
+                if state.Account.IsNone  
+                then
+                    (AccountNotFound |> Persist, state.Version) |> Some
+
+                elif  state.Account.Value.Balance < money then
+                    (OverdraftAttempted (state.Account.Value, money) |> Persist, state.Version) |> Some
+                else
+                    (MoneyReserved money |> Persist, state.Version + 1L) |> Some
 
         | ConfirmReservation, _ ->
            let findReservation = state.Resevations |> List.tryFind (fun x -> x.CorrelationId = corID) |> Option.map (fun x -> x.EventDetails) 

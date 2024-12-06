@@ -84,10 +84,11 @@ let actorProp<'SagaData,'TEvent,'Env,'State> (loggerFactory:ILoggerFactory) init
             |  ResumeFirstEvent -> 
                 SagaStarter.cont mediator; 
                 newState
-            | Stop -> 
-                mailbox.Parent() <! Passivate(Actor.PoisonPill.Instance)
+            | Stop  -> 
+                let poision = Akka.Cluster.Sharding.Passivate <| Actor.PoisonPill.Instance 
+                mailbox.Parent() <! poision
                 log.Info("SubscriptionsSaga Completed");
-                 newState
+                newState
                 
           
     let rec set   (sagaState: SagaState<'SagaData,'State>) =

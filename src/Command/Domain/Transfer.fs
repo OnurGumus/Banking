@@ -5,6 +5,7 @@ open FCQRS.Common
 open FCQRS
 type TransferEventDetails = { From: AccountName; To: AccountName; Amount: PositiveMoney }
 
+type Status = Completed | Failed
 type Event =
     | MoneyTransferred of TransferEventDetails
     | TransferRequested of TransferEventDetails
@@ -13,7 +14,7 @@ type Event =
     
 type Command =
     | Transfer of TransferDetails
-    | MarkTransferCompleted
+    | MarkTransferCompleted of Status
     | Continue
 type LastEvents = {  TransferRequestedEvent: Event option; MoneyTransferredEvent: Event option }
 
@@ -51,15 +52,18 @@ module internal Actor =
         | Continue, {LastEvents =  { TransferRequestedEvent = None } }->
             (seq{TransferAborted } |>Defer, state.Version) |> Some
 
-        | MarkTransferCompleted, { LastEvents =  { MoneyTransferredEvent = None} } ->
+        | MarkTransferCompleted Status.Completed, { LastEvents =  { MoneyTransferredEvent = None} } ->
             (MoneyTransferred { 
                 From = state.TransferDetails.Value.OperationDetails.AccountName; 
                 To = state.TransferDetails.Value.DestinationAccountName; 
                 Amount = state.TransferDetails.Value.OperationDetails.Money } 
                  |> Persist, state.Version + 1L) |> Some
 
-        | MarkTransferCompleted, { LastEvents =  { MoneyTransferredEvent = Some e} } ->
+        | MarkTransferCompleted Status.Completed, { LastEvents =  { MoneyTransferredEvent = Some e} } ->
             (seq{e } |> Defer, state.Version) |> Some
+            
+        | MarkTransferCompleted Status.Failed, _ ->
+            (TransferAborted |> Persist, state.Version) |> Some
          
 
     let init (env: _) toEvent (actorApi: IActor) =

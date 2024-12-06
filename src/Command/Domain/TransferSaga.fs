@@ -11,6 +11,8 @@ open Transfer
 open FCQRS.Model.Data
 open Banking.Model.Data
 
+type TransactionFinalState = Completed | Failed
+
 type State =
     | NotStarted
     | Started of SagaStartingEvent<Event<Transfer.Event>>
@@ -19,8 +21,7 @@ type State =
     | ReservingReceiver
     | ConfirmingSender
     | ConfirmingReceiver
-    | CompletingSenderAndReceiver
-    | CompletingTransfer
+    | CompletingTransfer of TransactionFinalState
     | Completed
 
     interface ISerializable
@@ -41,12 +42,18 @@ let handleEvent (event:obj) (state:SagaState<SagaData,State>): option<Effect<_>>
         | :? (Common.Event<Transfer.Event>) as { EventDetails = accountEvent }, state ->
             match accountEvent, state with
             | Transfer.TransferRequested e,  _ -> TransferStarted e |> toStateChange
+            | Transfer.MoneyTransferred _ ,  _ 
+            | Transfer.TransferAborted,  _ ->
+                Completed  |> toStateChange
         | :? (Common.Event<Account.Event>) as { EventDetails = accountEvent }, state ->
             match accountEvent, state.State with
+            | Account.AccountNotFound,  _   -> 
+                CompletingTransfer TransactionFinalState.Failed  |> toStateChange
+            | Account.OverdraftAttempted _,  State.ReservingSender   -> 
+                CompletingTransfer TransactionFinalState.Failed  |> toStateChange
             | Account.MoneyReserved e,  State.ReservingSender   -> ReservingReceiver  |> toStateChange
             | Account.MoneyReserved e,  State.ReservingReceiver   -> ConfirmingReceiver  |> toStateChange
             | Account.BalanceUpdated e,  State.ConfirmingReceiver   -> ConfirmingSender  |> toStateChange
-            | Account.BalanceUpdated e,  State.ConfirmingSender   -> CompletingSenderAndReceiver  |> toStateChange
     
             | _ ->  Completed   |> toStateChange
         | _ -> None
@@ -92,8 +99,12 @@ let applySideEffects env transferFactory accountFactory  (sagaState:SagaState<Sa
 
         | ConfirmingReceiver ->  NoEffect, None,[]
         | ConfirmingSender ->  NoEffect, None,[]
-        | CompletingSenderAndReceiver ->  NoEffect, None,[]
-        | CompletingTransfer ->  NoEffect, None,[]
+        | CompletingTransfer Failed->  
+           
+            NoEffect, None,[{ TargetActor =  FactoryAndName { Factory = transferFactory; Name = Originator}  ; Command = Transfer.MarkTransferCompleted Status.Failed  }]
+        | CompletingTransfer TransactionFinalState.Completed ->
+            NoEffect, None,[{ TargetActor =  FactoryAndName { Factory = transferFactory; Name = Originator}  ; Command = Transfer.MarkTransferCompleted Status.Completed  }]
+
         | Completed ->
            Stop, None,[  ]
 
