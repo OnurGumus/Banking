@@ -1,0 +1,87 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": ".NET Core Attach",
+            "type": "coreclr",
+            "request": "attach",
+            "processId": "${command:pickProcess}"
+        },
+        {
+            "name": "Debug Client",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:5091",
+            "webRoot": "${workspaceFolder}/src/Client/build",
+            "sourceMaps": true,
+        },
+        {
+            "name": "Launch Web",
+            "type": "coreclr",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/Server/bin/Debug/net9.0/Server.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/Server",
+            "console": "integratedTerminal",
+            "stopAtEntry": false,
+            "justMyCode": false, // should be false, as we want to debug 3rd party source code
+            "requireExactSource": true, 
+            "suppressJITOptimizations": true, // it's better to set true for local debugging
+            "enableStepFiltering": false, // to step into properties
+            "symbolOptions": {
+                "searchMicrosoftSymbolServer": true, // get pdb files from ms symbol server
+               // "searchNuGetOrgSymbolServer": true,
+                "moduleFilter": {
+                    "mode": "loadAllButExcluded",
+                    "excludedModules": []
+                }
+            },
+           
+
+            // "symbolOptions": {
+            //     "searchMicrosoftSymbolServer": true,
+            //     "searchNuGetOrgSymbolServer": true
+            // },
+            // "suppressJITOptimizations": true,
+            // "env": {
+            //     "COMPlus_ZapDisable": "1",
+            //     "COMPlus_ReadyToRun": "0"
+            // }
+        },
+        {
+            "name": "Debug Automation",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Build Automation",
+            "program": "${workspaceFolder}/test/Automation/bin/Debug/net8.0/Automation.dll",
+            "args": [],
+            "justMyCode" : false,
+            "logging": {
+                "moduleLoad": false
+            },
+            "stopAtEntry": false,
+            "console": "integratedTerminal",
+            "symbolOptions": {
+                
+                // "searchMicrosoftSymbolServer": true,
+                // "searchNuGetOrgSymbolServer": true,
+                "cachePath": "/symcache",
+                "moduleFilter": {
+                    "mode": "loadAllButExcluded",
+                }
+            },
+            "sourceLinkOptions": {
+                "https://raw.githubusercontent.com/*": { "enabled": true },
+                "*": { "enabled": true }
+            },
+        
+            "suppressJITOptimizations": true,
+            "env": {
+                "COMPlus_ZapDisable": "1",
+                "COMPlus_ReadyToRun": "0"
+            }
+        },
+       
+    ]
+    
+}

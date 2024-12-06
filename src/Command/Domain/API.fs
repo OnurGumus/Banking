@@ -9,7 +9,16 @@ open Akkling.Cluster.Sharding
 open Banking.Command.Domain
 
 let sagaCheck (env: _) toEvent actorApi (o: obj) =
+    printfn "%A" o
     match o with
+    | :? (Event<Transfer.Event>) as e ->
+            match e.EventDetails with
+            | Transfer.TransferRequested _ ->
+            [
+                (TransferSaga.factory env toEvent actorApi, id |> Some |> PrefixConversion, o)
+             ]
+             | _ -> []
+        | _ -> []
     | _ -> []
 [<Interface>]
 
@@ -27,6 +36,7 @@ let api (env: #_) (actorApi: IActor) =
         SagaStarter.init actorApi.System actorApi.Mediator scr
         Account.Actor.init env toEvent actorApi |> ignore
         Transfer.Actor.init env toEvent actorApi |> ignore
+        TransferSaga.init env toEvent actorApi |> ignore
 
         System.Threading.Thread.Sleep(1000)
 

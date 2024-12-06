@@ -35,7 +35,7 @@ module internal Actor =
     open Actor
     open FCQRS.Model.Data
 
-
+    
     let applyEvent (event: Event<_>) (_: State as state) =
         match event.EventDetails, state with
         | BalanceUpdated ( b:BalanceUpdateDetails), _ ->
@@ -65,7 +65,7 @@ module internal Actor =
             | Some x -> x |> Some
             | None -> (MoneyReserved money |> Persist, state.Version) |> Some
 
-        | ConfirmReservation, { Resevations = [] } ->
+        | ConfirmReservation, _ ->
            let findReservation = state.Resevations |> List.tryFind (fun x -> x.CorrelationId = corID) |> Option.map (fun x -> x.EventDetails) 
            match findReservation with
             
@@ -113,7 +113,6 @@ module internal Actor =
             else
                 let account = { state.Account.Value with Balance = (state.Account.Value.Balance - money) }
                 (BalanceUpdated { Account = account; BalanceOperation = BalanceOperation.Withdraw; Diff = money } |> Persist, state.Version + 1L) |> Some
-        | _ -> None
             
 
     let init (env: _) toEvent (actorApi: IActor) =
