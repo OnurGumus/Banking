@@ -15,7 +15,7 @@ open Akkling.Cluster.Sharding
 
 type SagaState<'SagaData,'State> = { Data: 'SagaData; State: 'State }
 type TargetName = Name of string | Originator
-type FactoryAndName = { Factory: IActor -> string -> IEntityRef<obj>;Name :TargetName }
+type FactoryAndName = { Factory:   string -> IEntityRef<obj>;Name :TargetName }
 type TargetActor=
         | FactoryAndName of FactoryAndName
         | Sender
@@ -54,7 +54,7 @@ let actorProp<'Command,'SagaData,'TEvent,'Env,'State> (loggerFactory:ILoggerFact
                                 match n with
                                 | Name n -> n
                                 | Originator -> cid |> toOriginatorName
-                            factory  actorApi name
+                            factory  name
                     
                         | Sender -> mailbox.Sender() 
                 targetActor <! c

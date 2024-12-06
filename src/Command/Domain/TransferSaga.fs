@@ -42,8 +42,7 @@ let handleEvent (event:obj) (state:SagaState<SagaData,State>): option<Effect<_>>
 
 
 
-let applySideEffects env toEvent (sagaState: SagaState<SagaData,State>) (startingEvent: option<SagaStartingEvent<Event<Transfer.Event>>>) recovering =
-        printfn "!! applySideEffects"
+let applySideEffects env originator (sagaState: SagaState<SagaData,State>) (startingEvent: option<SagaStartingEvent<Event<Transfer.Event>>>) recovering =
         match sagaState.State with
         | NotStarted -> NoEffect,Some(Started startingEvent.Value),[] // recovering is always true
 
@@ -52,9 +51,9 @@ let applySideEffects env toEvent (sagaState: SagaState<SagaData,State>) (startin
             if recovering then // recovering in this case means a crash, will never in practice, but just in case
                 // we not issue a continueOrAbort command here, Case 1 or Case 2 will trigger by aggreate
                 //subscriptionsActor () <!  continueOrAbort ()
-                let target = FactoryAndName { Factory = Transfer.Actor.factory env toEvent; Name =Originator}
+               
           //      let target = Sender
-                NoEffect,   None ,[ { TargetActor = target; Command = Transfer.Continue }]
+                NoEffect,   None ,[ { TargetActor = originator; Command = Transfer.Continue }]
             else
                Continue, None,[]
         | Completed ->
@@ -62,7 +61,8 @@ let applySideEffects env toEvent (sagaState: SagaState<SagaData,State>) (startin
 
 
 let init (env: _) toEvent (actorApi: IActor) =
-    Saga.init (env: _) actorApi initialState  handleEvent  (applySideEffects env toEvent) apply "TransferSaga"
+    let originaor =  FactoryAndName { Factory = Transfer.Actor.factory env toEvent actorApi; Name =Originator}
+    Saga.init (env: _) actorApi initialState  handleEvent  (applySideEffects env originaor) apply "TransferSaga"
 
 let factory (env: _) toEvent actorApi entityId =
     (init env toEvent actorApi).RefFor DEFAULT_SHARD entityId

@@ -9,7 +9,6 @@ open Akkling.Cluster.Sharding
 open Banking.Command.Domain
 
 let sagaCheck (env: _) toEvent actorApi (o: obj) =
-    printfn "%A" o
     match o with
     | :? (Event<Transfer.Event>) as e ->
             match e.EventDetails with
@@ -19,7 +18,6 @@ let sagaCheck (env: _) toEvent actorApi (o: obj) =
              ]
              | _ -> []
         | _ -> []
-    | _ -> []
 [<Interface>]
 
 type IDomain =
