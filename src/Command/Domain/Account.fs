@@ -11,14 +11,14 @@ type Event =
     | BalanceUpdated of BalanceUpdateDetails
     | OverdraftAttempted of Account * Money
     | AccountMismatch of  AccountMismatch
-    | MoneyReserved of PositiveMoney
+    | MoneyReserved of Money
     | TransferCompleted
 
     
 type Command =
     | Deposit of OperationDetails
     | Withdraw of OperationDetails
-    | ReserveMoney of PositiveMoney
+    | ReserveMoney of Money
     | ConfirmReservation
     | CompleteTransfer
 
@@ -77,7 +77,7 @@ module internal Actor =
                                     with Balance = state.Account.Value.Balance - (m |> ValueLens.Value) }; 
 
                             BalanceOperation = Receive; 
-                            Diff = (m |> ValueLens.Value)  
+                            Diff = m
 
                         } |> Persist, state.Version + 1L) 
                             |> Some
@@ -103,7 +103,13 @@ module internal Actor =
         
         | Withdraw{ Money = (ResultValue money); UserIdentity = userIdentity }, _ ->
             let totalReserved = 
-                    state.Resevations |> List.sumBy (fun x -> match x.EventDetails with | MoneyReserved m -> m |> ValueLens.Value | _ -> Money.Zero)
+                    state.Resevations
+                    |> List.map (fun eventWrapper -> eventWrapper.EventDetails)
+                    |> List.sumBy (fun event -> 
+                        match event  with 
+                        | MoneyReserved m when m > Money.Zero -> m  
+                        | _ -> Money.Zero
+                    )
 
             if (state.Account.IsSome && state.Account.Value.Owner <> userIdentity) then
                 (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} |> Persist, state.Version ) |> Some

@@ -42,7 +42,7 @@ let handleEvent (event:obj) (state:SagaState<SagaData,State>): option<Effect<_>>
 
 
 
-let applySideEffects env originator (sagaState: SagaState<SagaData,State>) (startingEvent: option<SagaStartingEvent<Event<Transfer.Event>>>) recovering =
+let applySideEffects env originator (sagaState: SagaState<SagaData,State>) (startingEvent: option<SagaStartingEvent<_>>) recovering =
         match sagaState.State with
         | NotStarted -> NoEffect,Some(Started startingEvent.Value),[] // recovering is always true
 
