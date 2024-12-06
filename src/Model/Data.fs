@@ -37,6 +37,10 @@ type Money =
 
         static member Zero = Money 0.0M
 
+        static member Negate (Money a) = Money (-a)
+
+        static member Abs (Money a) = Money (abs a)
+
         static member (-) (Money a, Money b) = Money (a - b)
         static member (+) (Money a, Money b) = Money (a + b)
         static member (-) (Money a, b:decimal) = Money (a - b)

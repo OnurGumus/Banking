@@ -43,10 +43,10 @@
             //     "searchNuGetOrgSymbolServer": true
             // },
             // "suppressJITOptimizations": true,
-            // "env": {
-            //     "COMPlus_ZapDisable": "1",
-            //     "COMPlus_ReadyToRun": "0"
-            // }
+            "env": {
+                "COMPlus_ZapDisable": "1",
+                "COMPlus_ReadyToRun": "0"
+            }
         },
         {
             "name": "Debug Automation",

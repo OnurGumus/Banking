@@ -14,7 +14,7 @@ let deposit createSubs : Deposit =
     fun  operationDetails ->
 
 
-        let actorId  =  operationDetails.AccountName ^. (Lens.toValidated AccountName.Value_ >-> ShortString.Value_  )
+        let actorId  = "Account_" +  (operationDetails.AccountName ^. (Lens.toValidated AccountName.Value_ >-> ShortString.Value_  ))
         async {
             let! subscribe =
                 createSubs actorId (Deposit(operationDetails)) 

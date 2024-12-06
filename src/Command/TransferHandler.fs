@@ -14,7 +14,7 @@ open System
 let transfer createSubs : Transfer =
     fun  transferDetails ->
 
-        let actorId  =  Guid.NewGuid().ToString()
+        let actorId  =  "Transfer_" +  Guid.NewGuid().ToString()
         async {
             let! subscribe =
                 createSubs actorId (Transfer(transferDetails)) 
