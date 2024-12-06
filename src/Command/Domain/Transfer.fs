@@ -20,7 +20,7 @@ type LastEvents = {  TransferRequestedEvent: Event<Event> option; MoneyTransferr
 
 type State = {
     Version: int64
-    TransferDetails: TransferDetails option
+    TransferDetails: TransferEventDetails option
     LastEvents: LastEvents 
 } with
 
@@ -34,8 +34,8 @@ module internal Actor =
 
     let applyEvent (event: Event<_>) (_: State as state) =
         match event.EventDetails, state with
-        // | TransferRequested e, _ ->
-        //     { state with TransferDetails = Some e; LastEvents = { state.LastEvents with TransferRequestedEvent = Some event } }
+        | TransferRequested e, _ ->
+            { state with TransferDetails = Some e ; LastEvents = { state.LastEvents with TransferRequestedEvent = Some event } }
         | _ -> state
         |> fun state -> { state with Version = event.Version }
 
@@ -56,9 +56,9 @@ module internal Actor =
 
         | MarkTransferCompleted Status.Completed, { LastEvents =  { MoneyTransferredEvent = None} } ->
             (MoneyTransferred { 
-                From = state.TransferDetails.Value.OperationDetails.AccountName; 
-                To = state.TransferDetails.Value.DestinationAccountName; 
-                Amount = state.TransferDetails.Value.OperationDetails.Money } 
+                From = state.TransferDetails.Value.From
+                To = state.TransferDetails.Value.To; 
+                Amount = state.TransferDetails.Value.Amount } 
                  , state.Version + 1L) |> PersistEvent
 
         | MarkTransferCompleted Status.Completed, { LastEvents =  { MoneyTransferredEvent = Some e} } ->
