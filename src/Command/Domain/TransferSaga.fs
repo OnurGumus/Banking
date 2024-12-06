@@ -28,7 +28,6 @@ type State =
 
 type SagaData = { TransferEventDetails: TransferEventDetails option; }
 
-
 let initialState = { State = NotStarted; Data = {TransferEventDetails = None }  }
 
 let apply (sagaState: SagaState<SagaData,State>) =

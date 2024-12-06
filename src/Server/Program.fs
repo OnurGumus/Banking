@@ -11,8 +11,8 @@ open FCQRS.Model.Aether
 open Banking.Model.Data
 open Banking.Model.Command.Accounting
 
-//let tempFile = "/workspaces/Banking/src/Server/Database/Banking.db"
-let tempFile = Path.GetTempFileName()
+let tempFile = "/workspaces/Banking/src/Server/Database/Banking.db"
+//let tempFile = Path.GetTempFileName()
 let connString = $"Data Source={tempFile}"
 
 

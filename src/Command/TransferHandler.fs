@@ -2,18 +2,13 @@ module internal TransferHandler
 
 open Banking.Command
 open Banking.Model.Command.Accounting
-open Banking.Model.Data
 open FCQRS.Common
-open FCQRS.Model.Aether
-open FCQRS.Model.Aether.Operators
 open FCQRS.Model.Data
 open Domain.Transfer
 open System
 
-
 let transfer createSubs : Transfer =
     fun  transferDetails ->
-
         let actorId  =  "Transfer_" +  Guid.NewGuid().ToString()
         async {
             let! subscribe =

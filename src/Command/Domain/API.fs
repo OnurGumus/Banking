@@ -18,8 +18,8 @@ let sagaCheck (env: _) actorApi (o: obj) =
              ]
              | _ -> []
         | _ -> []
+        
 [<Interface>]
-
 type IDomain =
     abstract ActorApi: IActor
     abstract AccountFactory: string -> IEntityRef<obj>

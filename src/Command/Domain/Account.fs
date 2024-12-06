@@ -13,15 +13,12 @@ type Event =
     | AccountMismatch of  AccountMismatch
     | AccountNotFound
     | MoneyReserved of Money
-    // | TransferCompleted
-
     
 type Command =
     | Deposit of OperationDetails
     | Withdraw of OperationDetails
     | ReserveMoney of Money
     | ConfirmReservation
-
 
 type State = {
     Version: int64
@@ -32,10 +29,8 @@ type State = {
     interface ISerializable
 
 module internal Actor =
-    open Akkling.Persistence
     open Actor
     open FCQRS.Model.Data
-
     
     let applyEvent (event: Event<_>) (_: State as state) =
         match event.EventDetails, state with
@@ -43,8 +38,6 @@ module internal Actor =
             { state with Account = Some b.Account }
         | MoneyReserved _, _ ->
             { state with Resevations = state.Resevations @ [event] }
-        // | TransferCompleted, _ -> 
-        //     { state with Resevations = state.Resevations |> List.filter (fun x -> x.CorrelationId <> event.CorrelationId) }
         
         | AccountMismatch _, _ 
         | OverdraftAttempted _, _
@@ -54,13 +47,10 @@ module internal Actor =
     let handleCommand (cmd:Command<_>) (state:State)  =
         let corID = cmd.CorrelationId
         match cmd.CommandDetails, state with
-        // | CompleteTransfer , _ ->
-        //     (TransferCompleted , state.Version) |> PersistEvent
 
         | ReserveMoney money, _ ->
             let existingEvent =  
                 state.Resevations |> List.tryFind (fun x -> x.CorrelationId = corID) 
-             //   |> Option.bind (fun x ->  Some (MoneyReserved money , state.Version))
             let eventAcion : EventAction<Event> =
                 match existingEvent with
                 | Some x -> x |> PublishEvent

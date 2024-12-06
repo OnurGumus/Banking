@@ -5,13 +5,10 @@ open Banking.Application.Command.Accounting
 open FCQRS.Model.Query
 open Banking.Application.Event
 
-
-
 type AppEnv(config: IConfiguration, loggerFactory: ILoggerFactory)  as self=
 
     let mutable commandApi = Unchecked.defaultof<_>
     let mutable queryApi = Unchecked.defaultof<_>
-
 
     interface ILoggerFactory with
         member this.AddProvider(provider: ILoggerProvider) : unit = loggerFactory.AddProvider(provider)

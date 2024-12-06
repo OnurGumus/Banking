@@ -24,7 +24,6 @@ let api (env: _) =
 
 
     { new IAPI with
-
         member _.ActorApi = actorApi        
         member this.Deposit((Value (ResultValue cid)): CID): Deposit = 
             AccountingHandler.deposit (accountSubs  cid)

@@ -27,9 +27,7 @@ type State = {
     interface ISerializable
 
 module internal Actor =
-    open Akkling.Persistence
     open Actor
-    open FCQRS.Model.Data
 
 
     let applyEvent (event: Event<_>) (_: State as state) =

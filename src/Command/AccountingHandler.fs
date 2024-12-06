@@ -9,11 +9,8 @@ open FCQRS.Model.Aether.Operators
 open FCQRS.Model.Data
 open Domain.Account
 
-
 let deposit createSubs : Deposit =
     fun  operationDetails ->
-
-
         let actorId  = "Account_" +  (operationDetails.AccountName ^. (Lens.toValidated AccountName.Value_ >-> ShortString.Value_  ))
         async {
             let! subscribe =
@@ -34,8 +31,6 @@ let deposit createSubs : Deposit =
 
 let withdraw createSubs : Withdraw =
     fun operationDetails ->
-
-        
         let actorId  =  operationDetails.AccountName ^. (Lens.toValidated AccountName.Value_ >-> ShortString.Value_  )
         async {
             let! subscribe =
