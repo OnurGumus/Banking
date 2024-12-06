@@ -51,7 +51,7 @@ let accountName: AccountName =  "123"  |> ValueLens.CreateAsResult |> Result.val
 let postiveMoney : PositiveMoney = money |> ValueLens.TryCreate |> Result.value
 let operationDetails = { UserIdentity = userIdentity; AccountName = accountName ; Money = postiveMoney} 
 
-// let depositResult = deposit  operationDetails |> Async.RunSynchronously
+let depositResult = deposit  operationDetails |> Async.RunSynchronously
 
 
 // let money2 :Money =  ValueLens.Create  7
@@ -74,5 +74,8 @@ let toUserIdentity: UserIdentity = "my user" |> ValueLens.CreateAsResult |> Resu
 let toMoney :Money =  ValueLens.Create  5
 let toPostiveMoney : PositiveMoney = toMoney |> ValueLens.TryCreate |> Result.value
 let toOperationDetails = { UserIdentity = toUserIdentity; AccountName = toAccountName ; Money = toPostiveMoney}
+
+deposit  toOperationDetails |> Async.RunSynchronously |> ignore
+
 let transferDetails = { OperationDetails = operationDetails; DestinationAccountName= toAccountName}
 let transferResult = transfer  transferDetails  |> Async.RunSynchronously

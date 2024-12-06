@@ -55,24 +55,25 @@ module internal Actor =
         let corID = cmd.CorrelationId
         match cmd.CommandDetails, state with
         // | CompleteTransfer , _ ->
-        //     (TransferCompleted |> Persist, state.Version) |> Some
+        //     (TransferCompleted , state.Version) |> PersistEvent
 
         | ReserveMoney money, _ ->
             let existingEvent =  
                 state.Resevations |> List.tryFind (fun x -> x.CorrelationId = corID) 
-                |> Option.bind (fun x -> Some (seq{MoneyReserved money} |> Defer, state.Version))
+             //   |> Option.bind (fun x ->  Some (MoneyReserved money , state.Version))
+            let eventAcion : EventAction<Event> =
+                match existingEvent with
+                | Some x -> x |> PublishEvent
+                | None -> 
+                    if state.Account.IsNone  
+                    then
+                        (AccountNotFound , state.Version) |> PersistEvent
 
-            match existingEvent with
-            | Some x -> x |> Some
-            | None -> 
-                if state.Account.IsNone  
-                then
-                    (AccountNotFound |> Persist, state.Version) |> Some
-
-                elif  state.Account.Value.Balance < money then
-                    (OverdraftAttempted (state.Account.Value, money) |> Persist, state.Version) |> Some
-                else
-                    (MoneyReserved money |> Persist, state.Version + 1L) |> Some
+                    elif  state.Account.Value.Balance < money then
+                        (OverdraftAttempted (state.Account.Value, money) , state.Version) |> PersistEvent
+                    else
+                        (MoneyReserved money , state.Version + 1L) |> PersistEvent
+            eventAcion
 
         | ConfirmReservation, _ ->
            let findReservation = state.Resevations |> List.tryFind (fun x -> x.CorrelationId = corID) |> Option.map (fun x -> x.EventDetails) 
@@ -88,27 +89,25 @@ module internal Actor =
                             BalanceOperation = Receive; 
                             Diff = m
 
-                        } |> Persist, state.Version + 1L) 
-                            |> Some
-                | _ -> None
+                        } , state.Version + 1L) 
+                            |> PersistEvent
+                | _ -> UnhandledEvent
            
         | Deposit{ Money = (ResultValue money); UserIdentity = userIdentity; AccountName = accountName }, _ ->
             if (state.Account.IsSome && state.Account.Value.Owner <> userIdentity)  then
 
-                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} 
-                    |> Persist, state.Version) |> Some
+                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity}, state.Version) |> PersistEvent
 
             else if state.Account.IsNone then
                 let newAccount = { AccountName = accountName; Balance = money; Owner = userIdentity }
-                (BalanceUpdated { Account = newAccount; BalanceOperation = BalanceOperation.Deposit; Diff = money } 
-                    |> Persist, state.Version + 1L) |> Some
+                (BalanceUpdated { Account = newAccount; BalanceOperation = BalanceOperation.Deposit; Diff = money } , state.Version + 1L) |> PersistEvent
             else
                 let account = { state.Account.Value with Balance = (state.Account.Value.Balance + money) }
                 (BalanceUpdated { 
                     Account = account; 
                     BalanceOperation = BalanceOperation.Deposit;
                      Diff = money }
-                     |> Persist, state.Version + 1L) |> Some
+                     , state.Version + 1L) |> PersistEvent
         
         | Withdraw{ Money = (ResultValue money); UserIdentity = userIdentity }, _ ->
             let totalReserved = 
@@ -121,14 +120,14 @@ module internal Actor =
                     )
 
             if (state.Account.IsSome && state.Account.Value.Owner <> userIdentity) then
-                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} |> Persist, state.Version ) |> Some
+                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} , state.Version ) |> PersistEvent
 
             else if state.Account.IsNone || state.Account.Value.Balance < totalReserved then
-                (OverdraftAttempted (state.Account.Value, money) |> Persist, state.Version) |> Some
+                (OverdraftAttempted (state.Account.Value, money), state.Version) |> PersistEvent
             else
-                let account = { state.Account.Value with Balance = (state.Account.Value.Balance - money) }
-                (BalanceUpdated { Account = account; BalanceOperation = BalanceOperation.Withdraw; Diff = money } |> Persist, state.Version + 1L) |> Some
-            
+            let account = { state.Account.Value with Balance = (state.Account.Value.Balance - money) }
+            (BalanceUpdated { Account = account; BalanceOperation = BalanceOperation.Withdraw; Diff = money } , state.Version + 1L) |> PersistEvent
+        
 
     let init (env: _) toEvent (actorApi: IActor) =
         let initialState = { Version = 0L; Account = None; Resevations = [] }

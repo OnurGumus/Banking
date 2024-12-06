@@ -52,8 +52,9 @@ let handleEvent (event:obj) (state:SagaState<SagaData,State>): option<Effect<_>>
             | Account.OverdraftAttempted _,  State.ReservingSender   -> 
                 CompletingTransfer TransactionFinalState.Failed  |> toStateChange
             | Account.MoneyReserved e,  State.ReservingSender   -> ReservingReceiver  |> toStateChange
-            | Account.MoneyReserved e,  State.ReservingReceiver   -> ConfirmingReceiver  |> toStateChange
-            | Account.BalanceUpdated e,  State.ConfirmingReceiver   -> ConfirmingSender  |> toStateChange
+            | Account.MoneyReserved e,  State.ReservingReceiver   -> ConfirmingSender  |> toStateChange
+            | Account.BalanceUpdated e,  State.ConfirmingSender   -> ConfirmingReceiver  |> toStateChange
+            | Account.BalanceUpdated e,  State.ConfirmingReceiver   -> CompletingTransfer TransactionFinalState.Completed  |> toStateChange
     
             | _ ->  Completed   |> toStateChange
         | _ -> None
@@ -92,13 +93,18 @@ let applySideEffects env transferFactory accountFactory  (sagaState:SagaState<Sa
 
         | ReservingReceiver ->
 
-        let target = accountActor sagaState.Data.TransferEventDetails.Value.To
-        let money = sagaState.Data.TransferEventDetails.Value.Amount |> ValueLens.Value |> Money.Negate
+            let target = accountActor sagaState.Data.TransferEventDetails.Value.To
+            let money = sagaState.Data.TransferEventDetails.Value.Amount |> ValueLens.Value |> Money.Negate
 
-        NoEffect, None ,[{ TargetActor = target; Command = Account.ReserveMoney money  }]
+            NoEffect, None ,[{ TargetActor = target; Command = Account.ReserveMoney money  }]
 
-        | ConfirmingReceiver ->  NoEffect, None,[]
-        | ConfirmingSender ->  NoEffect, None,[]
+        | ConfirmingReceiver ->  
+                let target = accountActor sagaState.Data.TransferEventDetails.Value.To
+                NoEffect, None ,[{ TargetActor = target; Command = Account.ConfirmReservation   }]
+
+        | ConfirmingSender ->  
+                let target = accountActor sagaState.Data.TransferEventDetails.Value.From
+                NoEffect, None ,[{ TargetActor = target; Command = Account.ConfirmReservation   }]
         | CompletingTransfer Failed->  
            
             NoEffect, None,[{ TargetActor =  FactoryAndName { Factory = transferFactory; Name = Originator}  ; Command = Transfer.MarkTransferCompleted Status.Failed  }]

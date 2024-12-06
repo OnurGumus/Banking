@@ -16,7 +16,7 @@ type Command =
     | Transfer of TransferDetails
     | MarkTransferCompleted of Status
     | Continue
-type LastEvents = {  TransferRequestedEvent: Event option; MoneyTransferredEvent: Event option }
+type LastEvents = {  TransferRequestedEvent: Event<Event> option; MoneyTransferredEvent:Event<Event> option }
 
 type State = {
     Version: int64
@@ -34,36 +34,38 @@ module internal Actor =
 
     let applyEvent (event: Event<_>) (_: State as state) =
         match event.EventDetails, state with
+        // | TransferRequested e, _ ->
+        //     { state with TransferDetails = Some e; LastEvents = { state.LastEvents with TransferRequestedEvent = Some event } }
         | _ -> state
         |> fun state -> { state with Version = event.Version }
 
     let handleCommand (cmd:Command<_>) (state:State)  =
         match cmd.CommandDetails, state with
         | Transfer _, { TransferDetails = Some _ } ->
-            (AnotherTransferIsInProgress  |> Persist, state.Version) |> Some
+            (AnotherTransferIsInProgress  , state.Version) |> PersistEvent
 
         | Transfer transferDetails, { TransferDetails = None } ->
             (TransferRequested { From = transferDetails.OperationDetails.AccountName; To = transferDetails.DestinationAccountName; Amount = transferDetails.OperationDetails.Money } 
-                 |> Persist, state.Version + 1L) |> Some
+                 , state.Version + 1L) |> PersistEvent
 
         | Continue, { LastEvents = {TransferRequestedEvent = Some event}} ->
-            ( seq{event } |> Defer, state.Version ) |> Some
+            event |> PublishEvent  
             
         | Continue, {LastEvents =  { TransferRequestedEvent = None } }->
-            (seq{TransferAborted } |>Defer, state.Version) |> Some
+            (TransferAborted  , state.Version) |> DeferEvent
 
         | MarkTransferCompleted Status.Completed, { LastEvents =  { MoneyTransferredEvent = None} } ->
             (MoneyTransferred { 
                 From = state.TransferDetails.Value.OperationDetails.AccountName; 
                 To = state.TransferDetails.Value.DestinationAccountName; 
                 Amount = state.TransferDetails.Value.OperationDetails.Money } 
-                 |> Persist, state.Version + 1L) |> Some
+                 , state.Version + 1L) |> PersistEvent
 
         | MarkTransferCompleted Status.Completed, { LastEvents =  { MoneyTransferredEvent = Some e} } ->
-            (seq{e } |> Defer, state.Version) |> Some
+            (e.EventDetails , state.Version) |> PersistEvent
             
         | MarkTransferCompleted Status.Failed, _ ->
-            (TransferAborted |> Persist, state.Version) |> Some
+            (TransferAborted , state.Version) |> PersistEvent
          
 
     let init (env: _) toEvent (actorApi: IActor) =
