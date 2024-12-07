@@ -21,7 +21,6 @@ type Command =
     | ConfirmReservation
 
 type State = {
-    Version: int64
     Account: Account option
     Resevations: Event<Event> list
 } with
@@ -48,7 +47,6 @@ module internal Actor =
         | AccountMismatch _, _ 
         | OverdraftAttempted _, _
         | _ -> state
-        |> fun state -> { state with Version = event.Version }
 
     let handleCommand (cmd:Command<_>) (state:State)  =
         let corID = cmd.CorrelationId
@@ -63,12 +61,12 @@ module internal Actor =
                 | None -> 
                     if state.Account.IsNone  
                     then
-                        (AccountNotFound , state.Version) |> PersistEvent
+                        AccountNotFound |> PersistEvent
 
                     elif  state.Account.Value.Balance < money then
-                        (OverdraftAttempted (state.Account.Value, money) , state.Version) |> PersistEvent
+                        (OverdraftAttempted (state.Account.Value, money)) |> PersistEvent
                     else
-                        (MoneyReserved money , state.Version + 1L) |> PersistEvent
+                        (MoneyReserved money ) |> PersistEvent
             eventAcion
 
         | ConfirmReservation, _ ->
@@ -84,24 +82,23 @@ module internal Actor =
 
                             Diff = m
 
-                        } , state.Version + 1L) 
+                        } ) 
                             |> PersistEvent
-                | _ -> (NoReservationFound, state.Version) |> DeferEvent
+                | _ -> (NoReservationFound) |> DeferEvent
            
         | Deposit{ Money = (ResultValue money); UserIdentity = userIdentity; AccountName = accountName }, _ ->
             if (state.Account.IsSome && state.Account.Value.Owner <> userIdentity)  then
 
-                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity}, state.Version) |> DeferEvent
+                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity}) |> DeferEvent
 
             else if state.Account.IsNone then
                 let newAccount = { AccountName = accountName; Balance = money; Owner = userIdentity }
-                (BalanceUpdated { Account = newAccount; Diff = money } , state.Version + 1L) |> PersistEvent
+                (BalanceUpdated { Account = newAccount; Diff = money } ) |> PersistEvent
             else
                 let account = { state.Account.Value with Balance = (state.Account.Value.Balance + money) }
                 (BalanceUpdated { 
                     Account = account; 
-                     Diff = money }
-                     , state.Version + 1L) |> PersistEvent
+                     Diff = money }) |> PersistEvent
         
         | Withdraw{ Money = (ResultValue money); UserIdentity = userIdentity }, _ ->
             let totalReserved = 
@@ -114,19 +111,19 @@ module internal Actor =
                     )
 
             if (state.Account.IsSome && state.Account.Value.Owner <> userIdentity) then
-                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} , state.Version ) |> DeferEvent
+                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} ) |> DeferEvent
 
             elif state.Account.IsNone  then
-               (AccountNotFound, state.Version) |> DeferEvent
+               AccountNotFound |> DeferEvent
             elif state.Account.Value.Balance < totalReserved then
-                (OverdraftAttempted (state.Account.Value, money), state.Version) |> DeferEvent
+                (OverdraftAttempted (state.Account.Value, money)) |> DeferEvent
             else
             let account = { state.Account.Value with Balance = (state.Account.Value.Balance - money) }
-            (BalanceUpdated { Account = account; Diff = money } , state.Version + 1L) |> PersistEvent
+            (BalanceUpdated { Account = account; Diff = money } ) |> PersistEvent
         
 
     let init (env: _) toEvent (actorApi: IActor) =
-        let initialState = { Version = 0L; Account = None; Resevations = [] }
+        let initialState = {  Account = None; Resevations = [] }
         Actor.init (env: _) initialState "Accounting" toEvent (actorApi: IActor) handleCommand applyEvent
 
     let factory (env: #_) toEvent actorApi entityId =
