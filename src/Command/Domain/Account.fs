@@ -91,7 +91,7 @@ module internal Actor =
         | Deposit{ Money = (ResultValue money); UserIdentity = userIdentity; AccountName = accountName }, _ ->
             if (state.Account.IsSome && state.Account.Value.Owner <> userIdentity)  then
 
-                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity}, state.Version) |> PersistEvent
+                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity}, state.Version) |> DeferEvent
 
             else if state.Account.IsNone then
                 let newAccount = { AccountName = accountName; Balance = money; Owner = userIdentity }
@@ -114,12 +114,12 @@ module internal Actor =
                     )
 
             if (state.Account.IsSome && state.Account.Value.Owner <> userIdentity) then
-                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} , state.Version ) |> PersistEvent
+                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} , state.Version ) |> DeferEvent
 
             elif state.Account.IsNone  then
                (AccountNotFound, state.Version) |> DeferEvent
             elif state.Account.Value.Balance < totalReserved then
-                (OverdraftAttempted (state.Account.Value, money), state.Version) |> PersistEvent
+                (OverdraftAttempted (state.Account.Value, money), state.Version) |> DeferEvent
             else
             let account = { state.Account.Value with Balance = (state.Account.Value.Balance - money) }
             (BalanceUpdated { Account = account; Diff = money } , state.Version + 1L) |> PersistEvent
