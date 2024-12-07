@@ -73,7 +73,6 @@ type AddAcountsTable() =
             .WithColumn("Balance")
             .AsDecimal()
             .NotNullable()
-            .PrimaryKey()
             .WithColumn("Document")
             .AsBinary()
             .NotNullable()

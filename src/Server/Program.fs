@@ -1,4 +1,5 @@
-﻿open System
+﻿module Banking.Server.Program
+open System
 open System.IO
 open FsToolkit.ErrorHandling
 open Microsoft.Extensions.Configuration
@@ -11,8 +12,8 @@ open FCQRS.Model.Aether
 open Banking.Model.Data
 open Banking.Model.Command.Accounting
 
-let tempFile = "/workspaces/Banking/src/Server/Database/Banking.db"
-//let tempFile = Path.GetTempFileName()
+//let tempFile = "/workspaces/Banking/src/Server/Database/Banking.db"
+let tempFile = Path.GetTempFileName()
 let connString = $"Data Source={tempFile}"
 
 
@@ -35,7 +36,7 @@ let lf = LoggerFactory.Create(fun builder -> builder.AddConsole().AddDebug() |> 
 
 let env = new Banking.Server.Environments.AppEnv(config,lf)
 
-env.Init()
+env.Reset()
 open FCQRS.Model.Aether.Operators
 open FCQRS.Model.Query
 
@@ -79,3 +80,7 @@ deposit  toOperationDetails |> Async.RunSynchronously |> ignore
 
 let transferDetails = { OperationDetails = operationDetails; DestinationAccountName= toAccountName}
 let transferResult = transfer  transferDetails  |> Async.RunSynchronously
+
+
+Console.ReadLine() |> ignore
+printfn "dbfile: %s" tempFile

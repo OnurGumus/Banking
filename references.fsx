@@ -30,7 +30,7 @@
 #r @"/root/.nuget/packages/fcqrs.model/1.1.4/lib/net9.0/FCQRS.Model.dll"
 #r @"/root/.nuget/packages/fcqrs.sqlprovider/1.1.4/lib/net9.0/FCQRS.SQLProvider.dll"
 #r @"/root/.nuget/packages/fcqrs.serialization/1.1.4/lib/net9.0/FCQRS.Serialization.dll"
-#r @"/root/.nuget/packages/fcqrs/1.1.5/lib/net9.0/FCQRS.dll"
+#r @"/root/.nuget/packages/fcqrs/1.2.0/lib/net9.0/FCQRS.dll"
 #r @"/root/.nuget/packages/sqlprovider/1.4.2/lib/net8.0/FSharp.Data.SqlProvider.dll"
 #r @"/root/.nuget/packages/fsharp.interop.dynamic/5.0.1.268/lib/netstandard2.0/FSharp.Interop.Dynamic.dll"
 #r @"/root/.nuget/packages/fsharp.systemtextjson/1.3.13/lib/netstandard2.0/FSharp.SystemTextJson.dll"

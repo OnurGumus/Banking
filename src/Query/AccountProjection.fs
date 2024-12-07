@@ -12,44 +12,55 @@ open SqlProvider
 open FCQRS.Model.Data
 open Banking.Application.Event
 
-let handle (ctx: Sql.dataContext) eventDetails cid =
-    let cid:CID = cid |> ValueLens.CreateAsResult |> Result.value
+// QueryEvents.SqlQueryEvent
+// |> Event.add (fun query -> printfn "Executing SQL {query}: %A" query)
+
+//printfn "SqlProvider loaded"
+
+let handle (ctx: Sql.dataContext)(e:FCQRS.Common.Event<Account.Event>) =
+    let eventDetails = e.EventDetails
+    let cid = e.CorrelationId
+    let cid: CID = cid |> ValueLens.CreateAsResult |> Result.value
 
     match eventDetails with
-    | Account.BalanceUpdated {Account = account;  } ->
-        
+    | Account.BalanceUpdated { Account = account } ->
+
         let owner = account.Owner |> ValueLens.Value |> ValueLens.Value
         let accountName = account.AccountName |> ValueLens.Value |> ValueLens.Value
-        let balance = account.Balance |> ValueLens.Value 
+        let balance = account.Balance |> ValueLens.Value
         let serialize = encodeToBytes account
+
         let existingRow =
             query {
                 for c in (ctx.Main.Accounts) do
-                    where (c.UserIdentity = owner  && c.AccountName = accountName)
+                    where (c.UserIdentity = owner && c.AccountName = accountName)
                     take 1
                     select c
             }
             |> Seq.tryHead
+
         match existingRow with
         | Some row ->
             row.Balance <- balance
             row.Document <- serialize
+            row.UpdatedAt <- System.DateTime.UtcNow
+            row.Version <- e.Version
         | None ->
-          let row = 
-            ctx.Main.Accounts.``Create(CreatedAt, Document, UpdatedAt, Version)`` (
-                System.DateTime.UtcNow,
-                encodeToBytes account,
-                System.DateTime.UtcNow,
-                0L)
-          row.AccountName <-  accountName
-          row.Balance <- balance
-          row.UserIdentity <- owner
+            let row =
+                ctx.Main.Accounts.``Create(CreatedAt, Document, UpdatedAt, Version)`` (
+                    System.DateTime.UtcNow,
+                    encodeToBytes account,
+                    System.DateTime.UtcNow,
+                    e.Version
+                )
+
+            row.AccountName <- accountName
+            row.Balance <- balance
+            row.UserIdentity <- owner
 
         Some {
             Type = AccountEvent(BalanedUpdated account)
             CID = cid
-        } 
-    
-    | _ -> None
+        }
 
-            
+    | _ -> None

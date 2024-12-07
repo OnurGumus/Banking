@@ -19,8 +19,8 @@ let handleEventWrapper (ctx: Sql.dataContext) (actorApi: IActor) (subQueue: ISou
         let dataEvent =
             match envelop.Event with
 
-            | :? Event<Account.Event> as { EventDetails = eventDetails; CorrelationId = cid } ->
-                AccountProjection.handle ctx eventDetails cid
+            | :? Event<Account.Event> as  event ->
+                AccountProjection.handle ctx event
 
             | _ -> None
 

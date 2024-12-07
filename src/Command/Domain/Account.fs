@@ -112,7 +112,9 @@ module internal Actor =
             if (state.Account.IsSome && state.Account.Value.Owner <> userIdentity) then
                 (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity} , state.Version ) |> PersistEvent
 
-            else if state.Account.IsNone || state.Account.Value.Balance < totalReserved then
+            elif state.Account.IsNone  then
+               (AccountNotFound, state.Version) |> DeferEvent
+            elif state.Account.Value.Balance < totalReserved then
                 (OverdraftAttempted (state.Account.Value, money), state.Version) |> PersistEvent
             else
             let account = { state.Account.Value with Balance = (state.Account.Value.Balance - money) }
