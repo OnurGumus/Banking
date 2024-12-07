@@ -18,10 +18,9 @@ let api (env: _) =
     let config = env :> IConfiguration
     let loggerFactory = env :> ILoggerFactory
     let actorApi = FCQRS.Actor.api config loggerFactory
-    let domainApi = Command.Domain.API.api env actorApi
-    let accountSubs cid =  createCommandSubscription actorApi domainApi.AccountFactory cid
-    let transferSubs cid =  createCommandSubscription actorApi domainApi.TransferFactory cid
-
+    let actorFactories = Command.Domain.ActorFactories.factories env actorApi
+    let accountSubs =  createCommandSubscription actorApi actorFactories.AccountFactory
+    let transferSubs =  createCommandSubscription actorApi actorFactories.TransferFactory
 
     { new IAPI with
         member _.ActorApi = actorApi        
@@ -31,5 +30,4 @@ let api (env: _) =
             TransferHandler.transfer (transferSubs  cid)
         member this.Withdraw cid: Withdraw = 
             AccountingHandler.withdraw (accountSubs  cid)
-
     }
