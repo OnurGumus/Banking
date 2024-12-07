@@ -4,14 +4,14 @@ open Banking.Model.Data
 open FCQRS.Common
 open FCQRS
 
-type BalanceOperation = Deposit | Withdraw | Send | Receive
-type BalanceUpdateDetails ={ Account : Account; BalanceOperation : BalanceOperation ; Diff : Money}
+type BalanceUpdateDetails ={ Account : Account ; Diff : Money}
 type AccountMismatch = { TargetAccount : Account; TargetUser : UserIdentity }
 type Event =
     | BalanceUpdated of BalanceUpdateDetails
     | OverdraftAttempted of Account * Money
     | AccountMismatch of  AccountMismatch
     | AccountNotFound
+    | NoReservationFound
     | MoneyReserved of Money
     
 type Command =
@@ -35,7 +35,13 @@ module internal Actor =
     let applyEvent (event: Event<_>) (_: State as state) =
         match event.EventDetails, state with
         | BalanceUpdated ( b:BalanceUpdateDetails), _ ->
-            { state with Account = Some b.Account }
+            let state  ={ state with Account = Some b.Account }
+            if state.Resevations |> List.exists (fun x -> x.CorrelationId = event.CorrelationId) then
+                { state 
+                    with Resevations = state.Resevations 
+                        |> List.filter (fun x -> x.CorrelationId <> event.CorrelationId) }
+            else state
+
         | MoneyReserved _, _ ->
             { state with Resevations = state.Resevations @ [event] }
         
@@ -76,12 +82,11 @@ module internal Actor =
                                 { state.Account.Value 
                                     with Balance = state.Account.Value.Balance - (m |> ValueLens.Value) }; 
 
-                            BalanceOperation = Receive; 
                             Diff = m
 
                         } , state.Version + 1L) 
                             |> PersistEvent
-                | _ -> UnhandledEvent
+                | _ -> (NoReservationFound, state.Version) |> DeferEvent
            
         | Deposit{ Money = (ResultValue money); UserIdentity = userIdentity; AccountName = accountName }, _ ->
             if (state.Account.IsSome && state.Account.Value.Owner <> userIdentity)  then
@@ -90,12 +95,11 @@ module internal Actor =
 
             else if state.Account.IsNone then
                 let newAccount = { AccountName = accountName; Balance = money; Owner = userIdentity }
-                (BalanceUpdated { Account = newAccount; BalanceOperation = BalanceOperation.Deposit; Diff = money } , state.Version + 1L) |> PersistEvent
+                (BalanceUpdated { Account = newAccount; Diff = money } , state.Version + 1L) |> PersistEvent
             else
                 let account = { state.Account.Value with Balance = (state.Account.Value.Balance + money) }
                 (BalanceUpdated { 
                     Account = account; 
-                    BalanceOperation = BalanceOperation.Deposit;
                      Diff = money }
                      , state.Version + 1L) |> PersistEvent
         
@@ -118,7 +122,7 @@ module internal Actor =
                 (OverdraftAttempted (state.Account.Value, money), state.Version) |> PersistEvent
             else
             let account = { state.Account.Value with Balance = (state.Account.Value.Balance - money) }
-            (BalanceUpdated { Account = account; BalanceOperation = BalanceOperation.Withdraw; Diff = money } , state.Version + 1L) |> PersistEvent
+            (BalanceUpdated { Account = account; Diff = money } , state.Version + 1L) |> PersistEvent
         
 
     let init (env: _) toEvent (actorApi: IActor) =

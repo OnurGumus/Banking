@@ -36,27 +36,35 @@ let apply (sagaState: SagaState<SagaData,State>) =
         { sagaState with Data = { TransferEventDetails = Some e} }
     | _ -> sagaState
 
-let handleEvent (event:obj) (state:SagaState<SagaData,State>): option<Effect<_>>  =
+let handleEvent (event:obj) (state:SagaState<SagaData,State>)= //: EventAction<State>  =
     match event, state with
         | :? (Common.Event<Transfer.Event>) as { EventDetails = accountEvent }, state ->
             match accountEvent, state with
-            | Transfer.TransferRequested e,  _ -> TransferStarted e |> toStateChange
+            | Transfer.TransferRequested e,  _ -> TransferStarted e |>  StateChangedEvent
             | Transfer.MoneyTransferred _ ,  _ 
             | Transfer.TransferAborted,  _ ->
-                Completed  |> toStateChange
+                Completed  |> StateChangedEvent
+            | _ ->  UnhandledEvent
+            
         | :? (Common.Event<Account.Event>) as { EventDetails = accountEvent }, state ->
             match accountEvent, state.State with
             | Account.AccountNotFound,  _   -> 
-                CompletingTransfer TransactionFinalState.Failed  |> toStateChange
+                CompletingTransfer TransactionFinalState.Failed  |> StateChangedEvent
             | Account.OverdraftAttempted _,  State.ReservingSender   -> 
-                CompletingTransfer TransactionFinalState.Failed  |> toStateChange
-            | Account.MoneyReserved e,  State.ReservingSender   -> ReservingReceiver  |> toStateChange
-            | Account.MoneyReserved e,  State.ReservingReceiver   -> ConfirmingSender  |> toStateChange
-            | Account.BalanceUpdated e,  State.ConfirmingSender   -> ConfirmingReceiver  |> toStateChange
-            | Account.BalanceUpdated e,  State.ConfirmingReceiver   -> CompletingTransfer TransactionFinalState.Completed  |> toStateChange
+                CompletingTransfer TransactionFinalState.Failed  |> StateChangedEvent
+            | Account.MoneyReserved _,  State.ReservingSender   -> ReservingReceiver  |> StateChangedEvent
+            | Account.MoneyReserved _,  State.ReservingReceiver   -> ConfirmingSender  |> StateChangedEvent
+
+            | Account.NoReservationFound,  State.ConfirmingSender 
+            | Account.BalanceUpdated _,  State.ConfirmingSender   -> 
+                ConfirmingReceiver  |> StateChangedEvent
+
+            | Account.NoReservationFound,  State.ConfirmingSender 
+            | Account.BalanceUpdated _,  State.ConfirmingReceiver   -> 
+                CompletingTransfer TransactionFinalState.Completed  |> StateChangedEvent
     
-            | _ ->  Completed   |> toStateChange
-        | _ -> None
+            | _ ->  Completed   |> StateChangedEvent
+        | _ -> UnhandledEvent
 
 
 let applySideEffects env transferFactory accountFactory  (sagaState:SagaState<SagaData,State>) (startingEvent: option<SagaStartingEvent<_>>) recovering =
@@ -72,7 +80,7 @@ let applySideEffects env transferFactory accountFactory  (sagaState:SagaState<Sa
     match sagaState.State with
         | NotStarted -> NoEffect,Some(Started startingEvent.Value),[] // recovering is always true
 
-        | Started e -> // almost always recovering is false
+        | Started _ -> // almost always recovering is false
                 //by default recovering should be false here until very exceptional case
             if recovering then // recovering in this case means a crash, will never in practice, but just in case
                 // we not issue a continueOrAbort command here, Case 1 or Case 2 will trigger by aggreate
