@@ -5,7 +5,7 @@ open Banking.Model.Data
 open FCQRS.Serialization
 open SqlProvider
 
-let queryApi (config: IConfiguration) actorApi =
+let queryApi env (config: IConfiguration) actorApi =
 
     let connString = config.GetSection("config:connection-string").Value
 
@@ -43,4 +43,4 @@ let queryApi (config: IConfiguration) actorApi =
 
         async { return res }
 
-    Projection.init connString actorApi query
+    Projection.init env connString actorApi query

@@ -68,7 +68,7 @@ type AppEnv(config: IConfiguration, loggerFactory: ILoggerFactory)  as self=
     member _.Init() = 
         Migrations.init config
         commandApi <- Banking.Command.API.api self
-        queryApi <- Banking.Query.API.queryApi config commandApi.ActorApi
+        queryApi <- Banking.Query.API.queryApi  self config commandApi.ActorApi
         
 
     

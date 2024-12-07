@@ -9,10 +9,13 @@ open FCQRS.Model.Query
 open Banking.Application.Event
 open Banking.Command.Domain
 open SqlProvider
+open Microsoft.Extensions.Logging
 
 type CID = FCQRS.Model.Data.CID
 
-let handleEventWrapper (ctx: Sql.dataContext) (actorApi: IActor) (subQueue: ISourceQueue<_>) (envelop: EventEnvelope) =
+let handleEventWrapper env (ctx: Sql.dataContext) (actorApi: IActor) (subQueue: ISourceQueue<_>) (envelop: EventEnvelope) =
+    let loggingFactory = env :> ILoggerFactory
+    let logger = loggingFactory.CreateLogger("Banking.Query.Projection")
     try
         //Log.Debug("Envelop:{@envelop}", envelop)
         let offsetValue = (envelop.Offset :?> Sequence).Value
@@ -35,12 +38,12 @@ let handleEventWrapper (ctx: Sql.dataContext) (actorApi: IActor) (subQueue: ISou
         | _ -> ()
     with
     | ex ->
-       printfn "Error: %s" ex.Message
+       logger.LogCritical(ex, "Error handling event: {@envelop}", envelop)
        actorApi.System.Terminate().Wait()
        System.Environment.Exit(-1)
 
 
-let init (connectionString: string) (actorApi: IActor) query =
+let init env (connectionString: string) (actorApi: IActor) query =
         let ctx = Sql.GetDataContext(connectionString)
     
         use conn = ctx.CreateConnection()
@@ -50,5 +53,5 @@ let init (connectionString: string) (actorApi: IActor) query =
         cmd.ExecuteNonQuery() |> ignore
     
         let offsetCount =  ctx.Main.Offsets.Individuals.Banking.OffsetCount
-        FCQRS.Query.init actorApi offsetCount (handleEventWrapper ctx) query
+        FCQRS.Query.init actorApi offsetCount (handleEventWrapper env ctx) query
        
