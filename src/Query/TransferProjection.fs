@@ -20,7 +20,6 @@ open Banking.Application.Event
 let handle (ctx: Sql.dataContext)(e:FCQRS.Common.Event<Transfer.Event>) =
     let eventDetails = e.EventDetails
     let cid = e.CorrelationId
-    let cid: CID = cid |> ValueLens.CreateAsResult |> Result.value
 
     match eventDetails with
     | Transfer.Event.MoneyTransferred x ->

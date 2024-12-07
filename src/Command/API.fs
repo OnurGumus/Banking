@@ -25,11 +25,11 @@ let api (env: _) =
 
     { new IAPI with
         member _.ActorApi = actorApi        
-        member this.Deposit((Value (ResultValue cid)): CID): Deposit = 
+        member this.Deposit cid: Deposit = 
             AccountingHandler.deposit (accountSubs  cid)
-        member this.Transfer((Value (ResultValue cid)): CID): Transfer = 
+        member this.Transfer cid: Transfer = 
             TransferHandler.transfer (transferSubs  cid)
-        member this.Withdraw((Value (ResultValue cid))): Withdraw = 
+        member this.Withdraw cid: Withdraw = 
             AccountingHandler.withdraw (accountSubs  cid)
 
     }
