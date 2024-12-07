@@ -20,7 +20,7 @@ let sagaCheck (env: _) actorApi (o: obj) =
         | _ -> []
         
 [<Interface>]
-type IDomain =
+type IActorFactories =
     abstract ActorApi: IActor
     abstract AccountFactory: string -> IEntityRef<obj>
     abstract TransferFactory: string -> IEntityRef<obj>
@@ -38,14 +38,12 @@ let api (env: #_) (actorApi: IActor) =
         
 
         System.Threading.Thread.Sleep(1000)
-        let domainFactories =
-            { new IDomain with
-                member _.ActorApi = actorApi
-                member _.TransferFactory entityId =
-                    Transfer.Actor.factory env toEvent actorApi entityId
-                member _.AccountFactory entityId =
-                    Account.Actor.factory env toEvent actorApi entityId
-            }
+        { new IActorFactories with
+            member _.ActorApi = actorApi
+            member _.TransferFactory entityId =
+                Transfer.Actor.factory env toEvent actorApi entityId
+            member _.AccountFactory entityId =
+                Account.Actor.factory env toEvent actorApi entityId
+        }
             
-        domainFactories
     

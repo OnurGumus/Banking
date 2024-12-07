@@ -7,7 +7,7 @@
     <Compile Include="Domain\Account.fs" />
     <Compile Include="Domain\Transfer.fs" />
     <Compile Include="Domain\TransferSaga.fs" />
-    <Compile Include="Domain\API.fs" />
+    <Compile Include="Domain\ActorFactories.fs" />
     <Compile Include="TransferHandler.fs" />
     <Compile Include="AccountingHandler.fs" />
     <Compile Include="API.fs" />
