@@ -39,6 +39,7 @@ let env = new Banking.Server.Environments.AppEnv(config,lf)
 env.Reset()
 open FCQRS.Model.Aether.Operators
 open FCQRS.Model.Query
+open System.Threading
 
 let acc = env :> IAccounting
 
@@ -60,13 +61,14 @@ let depositResult = deposit  operationDetails |> Async.RunSynchronously
 // let withdrawResult = withdraw  operationDetails|> Async.RunSynchronously
 
 // let withdrawResultFailed = withdraw  operationDetails |> Async.RunSynchronously
-// let query = env :> IQuery<_>
+let query = env :> IQuery<_>
 // System.Threading.Thread.Sleep 1000
 
 // let list  = query.Query<Account>() |> Async.RunSynchronously
 
 // printf "Accounts: %A" list
 
+let s = query.Subscribe((fun e -> e.Type.IsTransferEvent && e.CID = cid),1,ignore, CancellationToken.None) 
 
 let transfer : Transfer = acc.Transfer cid
 
@@ -81,6 +83,7 @@ deposit  toOperationDetails |> Async.RunSynchronously |> ignore
 let transferDetails = { OperationDetails = operationDetails; DestinationAccountName= toAccountName}
 let transferResult = transfer  transferDetails  |> Async.RunSynchronously
 
-
+s |> Async.RunSynchronously |> ignore
+printfn "Press any key to exit"
 Console.ReadLine() |> ignore
 printfn "dbfile: %s" tempFile

@@ -6,6 +6,7 @@
   <ItemGroup>
     <Compile Include="Migrations.fs" />
     <Compile Include="SqlProvider.fs" />
+    <Compile Include="TransferProjection.fs" />
     <Compile Include="AccountProjection.fs" />
     <Compile Include="Projection.fs" />
     <Compile Include="API.fs" />

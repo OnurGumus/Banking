@@ -21,6 +21,8 @@ let handleEventWrapper (ctx: Sql.dataContext) (actorApi: IActor) (subQueue: ISou
 
             | :? Event<Account.Event> as  event ->
                 AccountProjection.handle ctx event
+            | :? Event<Transfer.Event> as  event ->
+                TransferProjection.handle ctx event
 
             | _ -> None
 
