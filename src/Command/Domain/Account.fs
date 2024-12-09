@@ -22,9 +22,8 @@ type Command =
 type State = {
     Account: Account option
     Resevations: Event<Event> list
-} with
+} 
 
-    interface ISerializable
 
 module internal Actor =
     open FCQRS.Model.Data

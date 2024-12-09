@@ -52,8 +52,10 @@ let userIdentity: UserIdentity = "my user" |> ValueLens.CreateAsResult |> Result
 let accountName: AccountName =  "123"  |> ValueLens.CreateAsResult |> Result.value
 let postiveMoney : PositiveMoney = money |> ValueLens.TryCreate |> Result.value
 let operationDetails = { UserIdentity = userIdentity; AccountName = accountName ; Money = postiveMoney} 
-
-let depositResult = deposit  operationDetails |> Async.RunSynchronously
+for i in 1..40 do
+    let depositResult = deposit  operationDetails |> Async.RunSynchronously
+    System.Threading.Thread.Sleep 1000
+    printfn "Deposit: %A" depositResult
 
 
 // let money2 :Money =  ValueLens.Create  7
