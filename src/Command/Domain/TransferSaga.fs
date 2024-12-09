@@ -1,12 +1,8 @@
 module Banking.Command.Domain.TransferSaga
 
 open FCQRS
-open Akkling
-open Akka
 open Common
-open Actor
 open Common.SagaStarter
-open Saga
 open Transfer
 open FCQRS.Model.Data
 open Banking.Model.Data

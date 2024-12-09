@@ -1,6 +1,5 @@
 ﻿module Banking.Command.API
 
-open FCQRS
 open FCQRS.Model.Data
 open FCQRS.Actor
 open Banking.Model.Command.Accounting

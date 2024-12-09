@@ -2,7 +2,6 @@ module Banking.Command.Domain.Account
 
 open Banking.Model.Data
 open FCQRS.Common
-open FCQRS
 
 type BalanceUpdateDetails ={ Account : Account ; Diff : Money}
 type AccountMismatch = { TargetAccount : Account; TargetUser : UserIdentity }
@@ -28,7 +27,6 @@ type State = {
     interface ISerializable
 
 module internal Actor =
-    open Actor
     open FCQRS.Model.Data
     
     let applyEvent (event: Event<_>) (_: State as state) =
