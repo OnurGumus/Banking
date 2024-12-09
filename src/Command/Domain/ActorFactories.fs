@@ -14,8 +14,6 @@ type IActorFactories =
     abstract TransferFactory: string -> IEntityRef<obj>
 
 let factories (env: #_) (actorApi: IActor) =
-        let  toEvent v e =
-            Common.toEvent actorApi.System.Scheduler v e
 
         let transferShard =  Transfer.Actor.factory env  actorApi
         let accountShard =  Account.Actor.factory env actorApi
