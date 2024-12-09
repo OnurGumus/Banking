@@ -125,7 +125,7 @@ let applySideEffects env transferFactory accountFactory  (sagaState:SagaState<Sa
 let  init (env: _)  (actorApi: IActor) =
     let transferFactory =  Transfer.Actor.factory env  actorApi
     let accountFactory =  Account.Actor.factory env  actorApi
-    Saga.init (env: _) actorApi initialState  handleEvent  (applySideEffects env transferFactory accountFactory) apply "TransferSaga"
+    actorApi.InitializeSaga env initialState  handleEvent (applySideEffects env transferFactory accountFactory) apply "TransferSaga"
 
 let  factory (env: _)  actorApi entityId =
     (init env  actorApi).RefFor DEFAULT_SHARD entityId
