@@ -1,10 +1,7 @@
 module internal Command.Domain.ActorFactories
 
 open FCQRS
-open Akkling
-open Akka
 open Common
-open Actor
 open Akkling.Cluster.Sharding
 open Banking.Command.Domain
 
@@ -32,7 +29,6 @@ let factories (env: #_) (actorApi: IActor) =
         Account.Actor.init env  actorApi |> ignore
         Transfer.Actor.init env  actorApi |> ignore
         TransferSaga.init env actorApi |> ignore
-
 
         { new IActorFactories with
             member _.TransferFactory entityId =
