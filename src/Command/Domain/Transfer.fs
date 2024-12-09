@@ -69,9 +69,9 @@ module internal Actor =
             TransferAborted|> PersistEvent
          
 
-    let init (env: _) toEvent (actorApi: IActor) =
+    let init (env: _) (actorApi: IActor) =
         let initialState = { TransferDetails = None; LastEvents = { TransferRequestedEvent = None; MoneyTransferredEvent = None } }
-        Actor.init (env: _) initialState "Transaction" (toEvent) (actorApi: IActor) handleCommand applyEvent
+        actorApi.InitializeActor env initialState "Tranfer"  handleCommand applyEvent
 
-    let factory (env: #_) toEvent actorApi entityId =
-        (init env toEvent actorApi).RefFor DEFAULT_SHARD entityId
+    let factory (env: #_)  actorApi entityId =
+        (init env  actorApi).RefFor DEFAULT_SHARD entityId

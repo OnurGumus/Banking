@@ -6,6 +6,7 @@ open FCQRS.Actor
 open Banking.Model.Command.Accounting
 open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.Logging
+open FCQRS.Common
 
 [<Interface>]
 type IAPI =

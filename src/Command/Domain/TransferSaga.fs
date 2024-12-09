@@ -119,14 +119,12 @@ let applySideEffects env transferFactory accountFactory  (sagaState:SagaState<Sa
             NoEffect, None,[{ TargetActor =  FactoryAndName { Factory = transferFactory; Name = Originator}  ; Command = Transfer.MarkTransferCompleted Status.Completed  }]
 
         | Completed ->
-           Stop, None,[  ]
+           StopActor, None,[  ]
 
 
 let  init (env: _)  (actorApi: IActor) =
-    let toEvent v e =
-        Common.toEvent actorApi.System.Scheduler v e
-    let transferFactory =  Transfer.Actor.factory env toEvent actorApi
-    let accountFactory =  Account.Actor.factory env toEvent actorApi
+    let transferFactory =  Transfer.Actor.factory env  actorApi
+    let accountFactory =  Account.Actor.factory env  actorApi
     Saga.init (env: _) actorApi initialState  handleEvent  (applySideEffects env transferFactory accountFactory) apply "TransferSaga"
 
 let  factory (env: _)  actorApi entityId =

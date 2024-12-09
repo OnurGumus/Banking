@@ -17,8 +17,8 @@ let factories (env: #_) (actorApi: IActor) =
         let  toEvent v e =
             Common.toEvent actorApi.System.Scheduler v e
 
-        let transferShard =  Transfer.Actor.factory env toEvent actorApi
-        let accountShard =  Account.Actor.factory env toEvent actorApi
+        let transferShard =  Transfer.Actor.factory env  actorApi
+        let accountShard =  Account.Actor.factory env actorApi
         let tranferSagaShard = TransferSaga.factory env actorApi
 
         let sagaCheck  (o: obj) =
@@ -30,9 +30,9 @@ let factories (env: #_) (actorApi: IActor) =
                         | _ -> []
                 | _ -> []
 
-        SagaStarter.init actorApi.System actorApi.Mediator sagaCheck
-        Account.Actor.init env toEvent actorApi |> ignore
-        Transfer.Actor.init env toEvent actorApi |> ignore
+        actorApi.InitializeSagStarter sagaCheck
+        Account.Actor.init env  actorApi |> ignore
+        Transfer.Actor.init env  actorApi |> ignore
         TransferSaga.init env actorApi |> ignore
 
         System.Threading.Thread.Sleep(1000)

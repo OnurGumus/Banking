@@ -122,9 +122,9 @@ module internal Actor =
             (BalanceUpdated { Account = account; Diff = money } ) |> PersistEvent
         
 
-    let init (env: _) toEvent (actorApi: IActor) =
+    let init (env: _)  (actorApi: IActor) =
         let initialState = {  Account = None; Resevations = [] }
-        Actor.init (env: _) initialState "Accounting" toEvent (actorApi: IActor) handleCommand applyEvent
+        actorApi.InitializeActor env initialState "Accounting"  handleCommand applyEvent
 
-    let factory (env: #_) toEvent actorApi entityId =
-        (init env toEvent actorApi).RefFor DEFAULT_SHARD entityId
+    let factory (env: #_)  actorApi entityId =
+        (init env  actorApi).RefFor DEFAULT_SHARD entityId
