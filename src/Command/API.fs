@@ -19,8 +19,8 @@ let api (env: _) =
     let loggerFactory = env :> ILoggerFactory
     let actorApi = FCQRS.Actor.api config loggerFactory
     let actorFactories = Command.Domain.ActorFactories.factories env actorApi
-    let accountSubs =  createCommandSubscription actorApi actorFactories.AccountFactory
-    let transferSubs =  createCommandSubscription actorApi actorFactories.TransferFactory
+    let accountSubs =  actorApi.CreateCommandSubscription actorFactories.AccountFactory
+    let transferSubs =  actorApi.CreateCommandSubscription actorFactories.TransferFactory
 
     { new IAPI with
         member _.ActorApi = actorApi        
