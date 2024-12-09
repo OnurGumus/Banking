@@ -35,7 +35,6 @@ let factories (env: #_) (actorApi: IActor) =
         Transfer.Actor.init env  actorApi |> ignore
         TransferSaga.init env actorApi |> ignore
 
-        System.Threading.Thread.Sleep(1000)
 
         { new IActorFactories with
             member _.TransferFactory entityId =
