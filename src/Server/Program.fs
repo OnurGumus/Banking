@@ -15,12 +15,11 @@ open Banking.Model.Command.Accounting
 //let tempFile = "/workspaces/Banking/src/Server/Database/Banking.db"
 let tempFile = Path.GetTempFileName()
 let connString = $"Data Source={tempFile}"
-
-
+let wd = __SOURCE_DIRECTORY__
 let configBuilder =
     ConfigurationBuilder()
         .AddEnvironmentVariables()
-        .AddHoconFile("/workspaces/Banking/src/Server/config.hocon")
+        .AddHoconFile(Path.Combine(wd, "config.hocon"))
         .AddInMemoryCollection(
             dict
                 [| "config:connection-string", connString

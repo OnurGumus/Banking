@@ -71,7 +71,7 @@ module internal Actor =
 
     let init (env: _) (actorApi: IActor) =
         let initialState = { TransferDetails = None; LastEvents = { TransferRequestedEvent = None; MoneyTransferredEvent = None } }
-        actorApi.InitializeActor env initialState "Tranfer"  handleCommand applyEvent
+        actorApi.InitializeActor env initialState "Transfer"  handleCommand applyEvent
 
     let factory (env: #_)  actorApi entityId =
         (init env  actorApi).RefFor DEFAULT_SHARD entityId

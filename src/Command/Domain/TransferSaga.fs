@@ -6,6 +6,8 @@ open Common.SagaStarter
 open Transfer
 open FCQRS.Model.Data
 open Banking.Model.Data
+open Akkling
+
 
 type TransactionFinalState = Completed | Failed
 
@@ -63,7 +65,7 @@ let handleEvent (event:obj) (state:SagaState<SagaData,State>)= //: EventAction<S
         | _ -> UnhandledEvent
 
 
-let applySideEffects env transferFactory accountFactory  (sagaState:SagaState<SagaData,State>) (startingEvent: option<SagaStartingEvent<_>>) recovering =
+let applySideEffects (actorRef:ICanTell<obj>) env transferFactory accountFactory  (sagaState:SagaState<SagaData,State>) (startingEvent: option<SagaStartingEvent<_>>) recovering =
     
     let accountActor (accountName:AccountName) = 
         let accountName  =  
@@ -84,9 +86,9 @@ let applySideEffects env transferFactory accountFactory  (sagaState:SagaState<Sa
                 NoEffect,   None ,[ { TargetActor = originator; Command = Transfer.Continue;  }]
             else
                ResumeFirstEvent, None,[]
-
+// { TargetActor = ActorRef actorRef; Command = "Transfer.Continue";  }
         | TransferStarted e ->
-           NoEffect, Some ReservingSender ,[]
+           NoEffect, Some ReservingSender , [ { TargetActor = ActorRef actorRef; Command = "Onur";  }]
 
         | ReservingSender ->
             let target = accountActor sagaState.Data.TransferEventDetails.Value.From
@@ -121,7 +123,23 @@ let applySideEffects env transferFactory accountFactory  (sagaState:SagaState<Sa
 let  init (env: _)  (actorApi: IActor) =
     let transferFactory =  Transfer.Actor.factory env  actorApi
     let accountFactory =  Account.Actor.factory env  actorApi
-    actorApi.InitializeSaga env initialState  handleEvent (applySideEffects env transferFactory accountFactory) apply "TransferSaga"
+    let behavior (m: Actor<_>) =
+        let rec loop () =
+            actor {
+                let! msg = m.Receive()
+    
+                match msg with
+                | "stop" -> return Stop
+                | "unhandle" -> return Unhandled
+                | x ->
+                    printfn "!!!%s %A" x (m.Sender().Path)
+                    return! loop ()
+            }
+    
+        loop ()
+    let helloRef: IActorRef<obj> = spawnAnonymous actorApi.System (props behavior) |> retype
+
+    actorApi.InitializeSaga env initialState  handleEvent (applySideEffects (helloRef) env transferFactory accountFactory) apply "TransferSaga"
 
 let  factory (env: _)  actorApi entityId =
     (init env  actorApi).RefFor DEFAULT_SHARD entityId
