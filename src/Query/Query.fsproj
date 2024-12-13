@@ -7,7 +7,8 @@
     <Compile Include="Migrations.fs" />
     <Compile Include="SqlProvider.fs" />
     <Compile Include="TransferProjection.fs" />
-    <Compile Include="AccountProjection.fs" />
+    <Compile Include="AccountProjection.fs" />    
+
     <Compile Include="Projection.fs" />
     <Compile Include="API.fs" />
     <Content Include="paket.references" />
@@ -15,6 +16,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Model\Model.fsproj" />
     <ProjectReference Include="..\Command\Command.fsproj" />
+    <ProjectReference Include="/Users/onurgumus/Repos/FCQRS/src/FCQRS/FCQRS.fsproj" />
+
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

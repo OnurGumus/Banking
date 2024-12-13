@@ -60,7 +60,6 @@ let handleEvent (event:obj) (state:SagaState<SagaData,State>)= //: EventAction<S
             | Account.NoReservationFound,  State.ConfirmingSender 
             | Account.BalanceUpdated _,  State.ConfirmingReceiver   -> 
                 CompletingTransfer TransactionFinalState.Completed  |> StateChangedEvent
-    
             | _ ->  Completed   |> StateChangedEvent
         | _ -> UnhandledEvent
 
@@ -83,38 +82,38 @@ let applySideEffects (actorRef:ICanTell<obj>) env transferFactory accountFactory
             if recovering then // recovering in this case means a crash, will never in practice, but just in case
                 // we not issue a continueOrAbort command here, Case 1 or Case 2 will trigger by aggreate
                 let originator = FactoryAndName { Factory = transferFactory; Name = Originator}
-                NoEffect,   None ,[ { TargetActor = originator; Command = Transfer.Continue;  }]
+                NoEffect,   None ,[ { TargetActor = originator; Command = Transfer.Continue; DelayInMs = None }]
             else
                ResumeFirstEvent, None,[]
 // { TargetActor = ActorRef actorRef; Command = "Transfer.Continue";  }
         | TransferStarted e ->
-           NoEffect, Some ReservingSender , [ { TargetActor = ActorRef actorRef; Command = "Onur";  }]
+           NoEffect, Some ReservingSender , [ { TargetActor = ActorRef actorRef; Command = "Onur"; DelayInMs = Some 5000 }]
 
         | ReservingSender ->
             let target = accountActor sagaState.Data.TransferEventDetails.Value.From
             let money = sagaState.Data.TransferEventDetails.Value.Amount |> ValueLens.Value
             
-            NoEffect, None ,[{ TargetActor = target; Command = Account.ReserveMoney money  }]
+            NoEffect, None ,[{ TargetActor = target; Command = Account.ReserveMoney money ; DelayInMs = None }]
 
         | ReservingReceiver ->
 
             let target = accountActor sagaState.Data.TransferEventDetails.Value.To
             let money = sagaState.Data.TransferEventDetails.Value.Amount |> ValueLens.Value |> Money.Negate
 
-            NoEffect, None ,[{ TargetActor = target; Command = Account.ReserveMoney money  }]
+            NoEffect, None ,[{ TargetActor = target; Command = Account.ReserveMoney money; DelayInMs = None }]
 
         | ConfirmingReceiver ->  
                 let target = accountActor sagaState.Data.TransferEventDetails.Value.To
-                NoEffect, None ,[{ TargetActor = target; Command = Account.ConfirmReservation   }]
+                NoEffect, None ,[{ TargetActor = target; Command = Account.ConfirmReservation; DelayInMs = None }]
 
         | ConfirmingSender ->  
                 let target = accountActor sagaState.Data.TransferEventDetails.Value.From
-                NoEffect, None ,[{ TargetActor = target; Command = Account.ConfirmReservation   }]
+                NoEffect, None ,[{ TargetActor = target; Command = Account.ConfirmReservation; DelayInMs = None }]
         | CompletingTransfer Failed->  
            
-            NoEffect, None,[{ TargetActor =  FactoryAndName { Factory = transferFactory; Name = Originator}  ; Command = Transfer.MarkTransferCompleted Status.Failed  }]
+            NoEffect, None,[{ TargetActor =  FactoryAndName { Factory = transferFactory; Name = Originator}  ; Command = Transfer.MarkTransferCompleted Status.Failed ; DelayInMs = None }]
         | CompletingTransfer TransactionFinalState.Completed ->
-            NoEffect, None,[{ TargetActor =  FactoryAndName { Factory = transferFactory; Name = Originator}  ; Command = Transfer.MarkTransferCompleted Status.Completed  }]
+            NoEffect, None,[{ TargetActor =  FactoryAndName { Factory = transferFactory; Name = Originator}  ; Command = Transfer.MarkTransferCompleted Status.Completed;DelayInMs = None }]
 
         | Completed ->
            StopActor, None,[  ]

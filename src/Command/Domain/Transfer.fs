@@ -41,10 +41,10 @@ module internal Actor =
 
     let handleCommand (cmd:Command<_>) (state:State)  =
         match cmd.CommandDetails, state with
-        | Transfer _, { TransferDetails = Some _ } ->
-            AnotherTransferIsInProgress |> DeferEvent
+        // | Transfer _, { TransferDetails = Some _ } ->
+        //     AnotherTransferIsInProgress |> DeferEvent
 
-        | Transfer transferDetails, { TransferDetails = None } ->
+        | Transfer transferDetails, { TransferDetails = _ } ->
             (TransferRequested { From = transferDetails.OperationDetails.AccountName; 
                 To = transferDetails.DestinationAccountName; Amount = transferDetails.OperationDetails.Money })  |> PersistEvent
 

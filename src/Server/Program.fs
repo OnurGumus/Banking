@@ -43,8 +43,7 @@ open System.Threading
 let acc = env :> IAccounting
 
 
-let cid:CID = Guid.NewGuid().ToString() |> ValueLens.CreateAsResult |> Result.value
-
+let cid:CID  = Guid.NewGuid().ToString() |> ValueLens.CreateAsResult |> Result.value
 let money :Money =  ValueLens.Create  10
 let deposit : Deposit = acc.Deposit cid 
 let userIdentity: UserIdentity = "my user" |> ValueLens.CreateAsResult |> Result.value 
@@ -84,7 +83,14 @@ deposit  toOperationDetails |> Async.RunSynchronously |> ignore
 let transferDetails = { OperationDetails = operationDetails; DestinationAccountName= toAccountName}
 let transferResult = transfer  transferDetails  |> Async.RunSynchronously
 
+
+
 s |> Async.RunSynchronously |> ignore
 printfn "Press any key to exit"
+
+let cid2:CID  = Guid.NewGuid().ToString() |> ValueLens.CreateAsResult |> Result.value
+let transfer2 : Transfer = acc.Transfer (cid2)
+let transferResult2 = transfer2 transferDetails  |> Async.RunSynchronously
+printfn "Press any key to exit 2"
 Console.ReadLine() |> ignore
 printfn "dbfile: %s" tempFile

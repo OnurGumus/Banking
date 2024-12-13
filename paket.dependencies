@@ -11,3 +11,9 @@ nuget Microsoft.Data.Sqlite
 nuget FluentMigrator.Runner.SQLite
 nuget FCQRS.Serialization
 nuget FCQRS.SQLProvider
+nuget Akka.Cluster.Sharding
+nuget Akkling.Persistence
+nuget Akkling.Cluster.Sharding
+nuget Akka.Persistence.Sql
+nuget FSharp.Interop.Dynamic
+nuget Akka.Persistence.Query.Sql
