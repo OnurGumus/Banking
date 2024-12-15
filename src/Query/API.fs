@@ -4,6 +4,7 @@ open Microsoft.Extensions.Configuration
 open Banking.Model.Data
 open FCQRS.Serialization
 open SqlProvider
+open FSharp.Data.Sql
 
 let queryApi env (config: IConfiguration) actorApi =
 
@@ -27,20 +28,21 @@ let queryApi env (config: IConfiguration) actorApi =
         let augment db =
             FCQRS.SQLProvider.Query.augmentQuery filter orderby orderbydesc thenby thenbydesc take skip db
 
-        let res: seq<obj> =
-
-            if ty = typeof<Account> then
-                let q =
-                    query {
-                        for c in ctx.Main.Accounts do
-                            select c
-                    }
-                augment <@ q @>
-                |> Seq.map (fun x -> x.Document |> decodeFromBytes<Account> :> obj)
-
-            else
-                failwith "not implemented"
-
-        async { return res }
+        let res =
+            task{
+                if ty = typeof<Account> then
+                    let q =
+                        query {
+                            for c in ctx.Main.Accounts do
+                                select c
+                        }
+                    let! m =   augment <@ q @> |> Seq.executeQueryAsync
+                    return m  |> Seq.map (fun x -> x.Document |> decodeFromBytes<Account> :> obj)
+                    
+                else
+                    return failwith "not implemented"
+            }
+                
+        res |> Async.AwaitTask
 
     Projection.init env connString actorApi query

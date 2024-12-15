@@ -92,5 +92,7 @@ let cid2:CID  = Guid.NewGuid().ToString() |> ValueLens.CreateAsResult |> Result.
 let transfer2 : Transfer = acc.Transfer (cid2)
 let transferResult2 = transfer2 transferDetails  |> Async.RunSynchronously
 printfn "Press any key to exit 2"
+
+query.Query<Account>(filter = Greater("Balance", 0)) |> Async.RunSynchronously |> Seq.iter (fun x -> printfn "Account: %A" x)
 Console.ReadLine() |> ignore
 printfn "dbfile: %s" tempFile
