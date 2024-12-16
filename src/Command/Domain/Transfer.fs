@@ -34,6 +34,7 @@ module internal Actor =
 
 
     let applyEvent (event: Event<_>) (_: State as state) =
+        //System.Environment.FailFast("Not implemented")
         match event.EventDetails, state with
         | TransferRequested e, _ ->
             { state with TransferDetails = Some e ; LastEvents = { state.LastEvents with TransferRequestedEvent = Some event } }

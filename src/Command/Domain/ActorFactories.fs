@@ -25,7 +25,7 @@ let factories (env: #_) (actorApi: IActor) =
                         | _ -> []
                 | _ -> []
 
-        actorApi.InitializeSagStarter sagaCheck
+        actorApi.InitializeSagaStarter sagaCheck
         Account.Actor.init env  actorApi |> ignore
         Transfer.Actor.init env  actorApi |> ignore
         TransferSaga.init env actorApi |> ignore

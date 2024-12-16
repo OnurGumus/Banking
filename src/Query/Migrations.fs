@@ -99,7 +99,7 @@ let resetDatabase (serviceProvider: IServiceProvider) =
     let runner = serviceProvider.GetRequiredService<IMigrationRunner>()
 
     if runner.HasMigrationsToApplyRollback() then
-        runner.RollbackToVersion(1L)
+        runner.RollbackToVersion(0L)
 
 let createServices (config: IConfiguration) =
     let connString =
