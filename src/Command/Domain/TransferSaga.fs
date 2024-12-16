@@ -128,10 +128,12 @@ let  init (env: _)  (actorApi: IActor) =
                 let! msg = m.Receive()
     
                 match msg with
+                
                 | "stop" -> return Stop
                 | "unhandle" -> return Unhandled
                 | x ->
                     printfn "!!!%s %A" x (m.Sender().Path)
+                    m.Sender() <! "Hello"
                     return! loop ()
             }
     

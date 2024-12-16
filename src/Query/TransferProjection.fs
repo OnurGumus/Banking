@@ -25,9 +25,9 @@ let handle (ctx: Sql.dataContext)(e:FCQRS.Common.Event<Transfer.Event>) =
     | Transfer.Event.MoneyTransferred x ->
         let details : Banking.Application.Event.TransferDetails = 
             { From = x.From; To = x.To; Amount = x.Amount }
-        Some {
+        [ {
             Type = TransferEvent(TransferCompleted details)
             CID = cid
-        }
+        }]
 
-    | _ -> None
+    | _ -> []

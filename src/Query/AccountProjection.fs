@@ -46,7 +46,9 @@ let handle (ctx: Sql.dataContext)(e:FCQRS.Common.Event<Account.Event>) =
             row.Version <- e.Version
         | None ->
             let row =
-                ctx.Main.Accounts.``Create(CreatedAt, Document, UpdatedAt, Version)`` (
+                ctx.Main.Accounts.``Create(Balance, CreatedAt, Document, UpdatedAt, Version)``(
+
+                    balance,
                     System.DateTime.UtcNow,
                     encodeToBytes account,
                     System.DateTime.UtcNow,
@@ -57,9 +59,9 @@ let handle (ctx: Sql.dataContext)(e:FCQRS.Common.Event<Account.Event>) =
             row.Balance <- balance
             row.UserIdentity <- owner
 
-        Some {
+        [ {
             Type = AccountEvent(BalanedUpdated account)
             CID = cid
-        }
+        }]
 
-    | _ -> None
+    | _ -> []
