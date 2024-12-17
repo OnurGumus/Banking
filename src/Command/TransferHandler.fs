@@ -10,6 +10,7 @@ open System
 let transfer createSubs : Transfer =
     fun  transferDetails ->
         let actorId  =  "Transfer_" + Guid.NewGuid().ToString()
+        let actorId:ActorId = actorId |> ValueLens.CreateAsResult |> Result.value
         async {
             let! subscribe =
                 createSubs actorId (Transfer(transferDetails)) 
@@ -19,10 +20,10 @@ let transfer createSubs : Transfer =
                   EventDetails = MoneyTransferred _
                   Version = v
               } -> 
-                return  v |> ValueLens.TryCreate |> Result.mapError (fun e -> [e.ToString()])
+                return  Ok v
             | {
                   EventDetails =   _
-                  Version = v
+                  Version = _
               } -> return   Error [sprintf "TransferFailed failed for account %s" <| actorId.ToString()]
         }
 

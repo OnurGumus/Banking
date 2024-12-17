@@ -38,11 +38,14 @@ type AppEnv(config: IConfiguration, loggerFactory: ILoggerFactory)  as self=
                 }
             member _.Subscribe(cb, cancellationToken) = 
                 let ks = queryApi.Subscribe(cb)
-                cancellationToken.Register(fun _ ->ks.Shutdown()) |> ignore
+                cancellationToken.Register(fun _ ->ks.Shutdown()) 
             member _.Subscribe(filter, take, cb, cancellationToken) = 
                 let ks, res = queryApi.Subscribe(filter, take, cb)
-                cancellationToken.Register(fun _ ->ks.Shutdown()) |> ignore
-                res
+                let d= cancellationToken.Register(fun _ ->ks.Shutdown()) 
+                async {
+                    do! res
+                    return d
+                }
         
         
     

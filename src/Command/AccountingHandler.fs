@@ -12,6 +12,7 @@ open Domain.Account
 let deposit createSubs : Deposit =
     fun  operationDetails ->
         let actorId  = "Account_" +  (operationDetails.AccountName ^. (Lens.toValidated AccountName.Value_ >-> ShortString.Value_  ))
+        let actorId:ActorId = actorId |> ValueLens.CreateAsResult |> Result.value
         async {
             let! subscribe =
                 createSubs actorId (Deposit(operationDetails)) 
@@ -21,7 +22,7 @@ let deposit createSubs : Deposit =
                   EventDetails = BalanceUpdated _
                   Version = v
               } -> 
-                return  v |> ValueLens.TryCreate |> Result.mapError (fun e -> [e.ToString()])
+                return  Ok v
             | {
                   EventDetails =   _
                   Version = v
@@ -32,6 +33,7 @@ let deposit createSubs : Deposit =
 let withdraw createSubs : Withdraw =
     fun operationDetails ->
         let actorId  =  operationDetails.AccountName ^. (Lens.toValidated AccountName.Value_ >-> ShortString.Value_  )
+        let actorId:ActorId = actorId |> ValueLens.CreateAsResult |> Result.value
         async {
             let! subscribe =
                 createSubs actorId (Withdraw(operationDetails)) 
@@ -41,7 +43,7 @@ let withdraw createSubs : Withdraw =
                     EventDetails = BalanceUpdated _
                     Version = v
                 } -> 
-                return  v |> ValueLens.TryCreate |> Result.mapError (fun e -> [e.ToString()])
+                return  Ok v
             | {
                     EventDetails =   _
                     Version = v
