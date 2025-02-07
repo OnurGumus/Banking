@@ -15,7 +15,6 @@ type Event =
 type Command =
     | Transfer of TransferDetails
     | MarkTransferCompleted of Status
-    | Continue
 
 type LastEvents = {  
         TransferRequestedEvent: Event<Event> option; 
@@ -49,13 +48,6 @@ module internal Actor =
             (TransferRequested { From = transferDetails.OperationDetails.AccountName; 
                 To = transferDetails.DestinationAccountName; Amount = transferDetails.OperationDetails.Money })  |> PersistEvent
 
-        // Not going to happen in practice, but we need to handle it
-        | Continue, { LastEvents = {TransferRequestedEvent = Some event}} ->
-            event |> PublishEvent  
-        
-         // Not going to happen in practice, but we need to handle it            
-        | Continue, {LastEvents =  { TransferRequestedEvent = None } }->
-            TransferAborted  |> DeferEvent
 
         | MarkTransferCompleted Status.Completed, { LastEvents =  { MoneyTransferredEvent = None} } ->
             (MoneyTransferred { 

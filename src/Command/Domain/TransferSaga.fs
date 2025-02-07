@@ -26,7 +26,7 @@ type State =
 
 type SagaData = { TransferEventDetails: TransferEventDetails option; }
 
-let initialState = { State = NotStarted; Data = {TransferEventDetails = None }  }
+let initialState = { State = NotStarted; Data = {TransferEventDetails = None }; }
 
 let apply (sagaState: SagaState<SagaData,State>) =
     match sagaState.State with
@@ -81,8 +81,9 @@ let applySideEffects (actorRef:ICanTell<obj>) env transferFactory accountFactory
                 //by default recovering should be false here until very exceptional case
             if recovering then // recovering in this case means a crash, will never in practice, but just in case
                 // we not issue a continueOrAbort command here, Case 1 or Case 2 will trigger by aggreate
+                let startingEvent = startingEvent.Value.Event
                 let originator = FactoryAndName { Factory = transferFactory; Name = Originator}
-                NoEffect,   None ,[ { TargetActor = originator; Command = Transfer.Continue; DelayInMs = None }]
+                NoEffect,   None ,[ { TargetActor = originator; Command = ContinueOrAbort startingEvent; DelayInMs = None }]
             else
                ResumeFirstEvent, None,[]
 // { TargetActor = ActorRef actorRef; Command = "Transfer.Continue";  }

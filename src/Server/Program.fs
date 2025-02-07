@@ -12,8 +12,8 @@ open FCQRS.Model.Aether
 open Banking.Model.Data
 open Banking.Model.Command.Accounting
 
-//let tempFile = "/workspaces/Banking/src/Server/Database/Banking.db"
-let tempFile = Path.GetTempFileName()
+let tempFile = __SOURCE_DIRECTORY__ +  "/Banking.db"
+//let tempFile = Path.GetTempFileName()
 let connString = $"Data Source={tempFile}"
 let wd = __SOURCE_DIRECTORY__
 let configBuilder =
@@ -35,7 +35,8 @@ let lf = LoggerFactory.Create(fun builder -> builder.AddConsole().AddDebug() |> 
 
 let env = new Banking.Server.Environments.AppEnv(config,lf)
 
-env.Reset()
+env.Init()
+Console.ReadLine() |> ignore
 open FCQRS.Model.Aether.Operators
 open FCQRS.Model.Query
 open System.Threading
