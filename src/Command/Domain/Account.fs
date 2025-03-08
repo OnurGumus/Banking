@@ -86,11 +86,11 @@ module internal Actor =
         | Deposit{ Money = (ResultValue money); UserIdentity = userIdentity; AccountName = accountName }, _ ->
             if (state.Account.IsSome && state.Account.Value.Owner <> userIdentity)  then
 
-                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity}) |> DeferEvent
+                (AccountMismatch { TargetAccount = state.Account.Value; TargetUser = userIdentity}) |> PersistEvent
 
             else if state.Account.IsNone then
                 let newAccount = { AccountName = accountName; Balance = money; Owner = userIdentity }
-                (BalanceUpdated { Account = newAccount; Diff = money } ) |> PersistEvent
+                (BalanceUpdated { Account = newAccount; Diff = money } ) |> DeferEvent
             else
                 let account = { state.Account.Value with Balance = (state.Account.Value.Balance + money) }
                 (BalanceUpdated { 

@@ -12,8 +12,8 @@ open FCQRS.Model.Aether
 open Banking.Model.Data
 open Banking.Model.Command.Accounting
 
-let tempFile = __SOURCE_DIRECTORY__ +  "/Banking.db"
-//let tempFile = Path.GetTempFileName()
+//let tempFile = __SOURCE_DIRECTORY__ +  "/Banking.db"
+let tempFile = Path.GetTempFileName()
 let connString = $"Data Source={tempFile}"
 let wd = __SOURCE_DIRECTORY__
 let configBuilder =
@@ -35,8 +35,8 @@ let lf = LoggerFactory.Create(fun builder -> builder.AddConsole().AddDebug() |> 
 
 let env = new Banking.Server.Environments.AppEnv(config,lf)
 
-env.Init()
-Console.ReadLine() |> ignore
+env.Reset()
+//Console.ReadLine() |> ignore
 open FCQRS.Model.Aether.Operators
 open FCQRS.Model.Query
 open System.Threading
@@ -95,5 +95,5 @@ let transferResult2 = transfer2 transferDetails  |> Async.RunSynchronously
 printfn "Press any key to exit 2"
 
 query.Query<Account>(filter = Greater("Balance", 0)) |> Async.RunSynchronously |> Seq.iter (fun x -> printfn "Account: %A" x)
-Console.ReadLine() |> ignore
+//Console.ReadLine() |> ignore
 printfn "dbfile: %s" tempFile
